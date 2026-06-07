@@ -7,7 +7,8 @@
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-  "https://web-ichiba.example.com";
+  // β版のVercel既定URL。独自ドメイン設定時は環境変数 NEXT_PUBLIC_SITE_URL で上書き。
+  "https://apppark.vercel.app";
 
 export const siteConfig = {
   /** サービス名。変更する場合はここだけ直せば全体に反映されます。 */
@@ -75,10 +76,11 @@ export const siteConfig = {
     "業務効率化 Webサービス",
   ],
 
-  /** OGP / Twitter Card 設定 */
-  ogImage: "/og.svg",
+  /** OGP / Twitter Card 設定（1200×630 PNG。SNSで確実に表示されます） */
+  ogImage: "/og.png",
   twitterCard: "summary_large_image" as const,
-  twitterSite: "@web_ichiba_demo",
+  /** X(Twitter)の公式アカウント。未取得のため空（空のときは twitter:site を出力しない）。 */
+  twitterSite: "",
 
   /**
    * Google Search Console の「HTMLタグ」確認用トークン。

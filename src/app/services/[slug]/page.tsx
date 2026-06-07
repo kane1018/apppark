@@ -25,6 +25,7 @@ import { UsageVoiceSection } from "@/components/UsageVoiceSection";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { SimilarServices } from "@/components/SimilarServices";
 import { ServiceGallery } from "@/components/ServiceGallery";
+import { HelpfulButton } from "@/components/HelpfulButton";
 import { CommentSection } from "@/components/comments/CommentSection";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { JsonLd } from "@/components/JsonLd";
@@ -46,6 +47,8 @@ export function generateMetadata({
     description: service.shortDescription,
     path: `/services/${service.slug}`,
     ogType: "article",
+    // og:image / twitter:image は opengraph-image.tsx（サービス別の動的PNG）が提供
+    omitOgImage: true,
   });
 }
 
@@ -74,11 +77,10 @@ export default function ServiceDetailPage({
     description: service.shortDescription,
     applicationCategory: getCategoryName(service.category),
     url: `${siteConfig.url}/services/${service.slug}`,
-    offers: {
-      "@type": "Offer",
-      price: service.pricing === "free" ? "0" : undefined,
-      priceCurrency: "JPY",
-    },
+    // 無料サービスのみ価格0のOfferを付与（有料は価格不明のため offers を出さない）
+    ...(service.pricing === "free"
+      ? { offers: { "@type": "Offer", price: "0", priceCurrency: "JPY" } }
+      : {}),
   };
 
   return (
@@ -177,6 +179,9 @@ export default function ServiceDetailPage({
                   ※ AppParkの外にある外部サービスが開きます
                 </span>
               </div>
+
+              {/* 役に立った リアクション */}
+              <HelpfulButton initialCount={service.helpfulCount} />
             </div>
           </div>
         </section>

@@ -10,8 +10,9 @@ import {
   type SortKey,
 } from "@/lib/filters";
 import { pricingLabels, statusLabels } from "@/lib/labels";
-import { categories } from "@/data/categories";
-import { purposes } from "@/data/purposes";
+import { categories, getCategoryName } from "@/data/categories";
+import { purposes, getPurposeName } from "@/data/purposes";
+import { recruitmentMeta } from "@/lib/recruitment";
 import { ServiceGrid } from "@/components/ServiceGrid";
 import { RecruitmentStatusFilter } from "@/components/recruitment/RecruitmentStatusFilter";
 
@@ -52,6 +53,32 @@ export function ServicesExplorer({
     state.recruitment.length > 0 ||
     state.freeOnly ||
     state.aiOnly;
+
+  // 適用中の絞り込みチップ（個別解除用）
+  const activeChips: { key: string; label: string; onRemove: () => void }[] = [];
+  if (state.keyword)
+    activeChips.push({ key: "kw", label: `「${state.keyword}」`, onRemove: () => update("keyword", "") });
+  if (state.category)
+    activeChips.push({ key: "cat", label: getCategoryName(state.category), onRemove: () => update("category", "") });
+  if (state.purpose)
+    activeChips.push({ key: "pur", label: getPurposeName(state.purpose), onRemove: () => update("purpose", "") });
+  if (state.tag)
+    activeChips.push({ key: "tag", label: `#${state.tag}`, onRemove: () => update("tag", "") });
+  if (state.pricing)
+    activeChips.push({ key: "price", label: pricingLabels[state.pricing], onRemove: () => update("pricing", "") });
+  if (state.status)
+    activeChips.push({ key: "status", label: statusLabels[state.status], onRemove: () => update("status", "") });
+  state.recruitment.forEach((r) =>
+    activeChips.push({
+      key: `rec-${r}`,
+      label: recruitmentMeta[r].label,
+      onRemove: () => update("recruitment", state.recruitment.filter((x) => x !== r)),
+    })
+  );
+  if (state.freeOnly)
+    activeChips.push({ key: "free", label: "無料のみ", onRemove: () => update("freeOnly", false) });
+  if (state.aiOnly)
+    activeChips.push({ key: "ai", label: "AI関連のみ", onRemove: () => update("aiOnly", false) });
 
   return (
     <div className="space-y-6">
@@ -169,6 +196,27 @@ export function ServicesExplorer({
           )}
         </div>
       </div>
+
+      {/* 適用中の絞り込み（個別に解除できる） */}
+      {activeChips.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold text-ink-faint">絞り込み中:</span>
+          {activeChips.map((chip) => (
+            <button
+              key={chip.key}
+              type="button"
+              onClick={chip.onRemove}
+              className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700 ring-1 ring-inset ring-brand-600/15 transition hover:bg-brand-100"
+            >
+              {chip.label}
+              <span aria-hidden className="text-brand-400">
+                ✕
+              </span>
+              <span className="sr-only">を解除</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <p className="text-sm text-ink-soft">
         <span className="font-bold text-brand-800">{results.length}</span> 件のサービス

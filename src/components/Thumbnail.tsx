@@ -50,6 +50,8 @@ export function Thumbnail({
       <img
         src={service.thumbnailUrl}
         alt={alt}
+        width={1280}
+        height={720}
         className={`aspect-[16/9] w-full bg-gray-100 object-cover ${rounded} ${className}`}
         loading="lazy"
         onError={() => setErrored(true)}

@@ -62,17 +62,19 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* 補助導線（控えめ） */}
-          <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/60">
-            <span>Webサービスを作った方は</span>
+          {/* 補助導線（控えめ・自然に折り返す） */}
+          <p className="mt-6 text-xs leading-relaxed text-white/60">
+            <span className="mr-1">Webサービスを作った方は</span>
             <Link href="/submit" className="font-semibold text-white/90 underline-offset-2 hover:underline">
               掲載申請はこちら
             </Link>
-            <span aria-hidden>・</span>
-            <Link href="/sponsor" className="font-semibold text-white/90 underline-offset-2 hover:underline">
+            <span aria-hidden className="mx-1.5 text-white/40">
+              /
+            </span>
+            <Link href="/sponsor" className="whitespace-nowrap font-semibold text-white/90 underline-offset-2 hover:underline">
               スポンサー掲載
             </Link>
-          </div>
+          </p>
         </div>
       </section>
 

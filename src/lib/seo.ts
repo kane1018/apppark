@@ -13,6 +13,11 @@ interface PageMetaInput {
   path?: string;
   /** OGP の type（記事系は "article"）。既定は "website" */
   ogType?: "website" | "article";
+  /**
+   * true のとき og:image / twitter:image を出力しません。
+   * （opengraph-image.tsx などのファイル規約で動的に画像を生成するページ用。重複防止）
+   */
+  omitOgImage?: boolean;
 }
 
 /**
@@ -24,6 +29,7 @@ export function buildMetadata({
   description,
   path = "/",
   ogType = "website",
+  omitOgImage = false,
 }: PageMetaInput): Metadata {
   const url = `${siteConfig.url}${path}`;
   const desc = description ?? siteConfig.description;
@@ -31,6 +37,10 @@ export function buildMetadata({
     path === "/"
       ? `${siteConfig.name}｜${siteConfig.titleTagline}`
       : `${title}｜${siteConfig.name}`;
+
+  const ogImages = omitOgImage
+    ? undefined
+    : [{ url: siteConfig.ogImage, width: 1200, height: 630, alt: siteConfig.name }];
 
   return {
     title,
@@ -47,14 +57,14 @@ export function buildMetadata({
       siteName: siteConfig.name,
       locale: siteConfig.locale,
       type: ogType,
-      images: [{ url: siteConfig.ogImage, width: 1200, height: 630, alt: siteConfig.name }],
+      ...(ogImages ? { images: ogImages } : {}),
     },
     twitter: {
       card: siteConfig.twitterCard,
       title: fullTitle,
       description: desc,
-      site: siteConfig.twitterSite,
-      images: [siteConfig.ogImage],
+      ...(siteConfig.twitterSite ? { site: siteConfig.twitterSite } : {}),
+      ...(omitOgImage ? {} : { images: [siteConfig.ogImage] }),
     },
   };
 }
