@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: "Hiragino Sans", "Noto Sans JP", sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-gray-50 text-ink antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply tracking-tight;
+  }
+
+  /* キーボード操作時のフォーカスを見やすく（アクセシビリティ） */
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent-400 ring-offset-2 ring-offset-white;
+  }
+}
+
+@layer components {
+  .container-content {
+    @apply mx-auto w-full max-w-content px-4 sm:px-6 lg:px-8;
+  }
+
+  /* 主要ボタン（アクセントカラー） */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent-500 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-accent-600 active:scale-[0.99];
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-700 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-brand-800 active:scale-[0.99];
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-bold text-ink transition hover:border-brand-400 hover:text-brand-600;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold text-ink-soft transition hover:bg-gray-100 hover:text-ink;
+  }
+
+  .card {
+    @apply rounded-2xl border border-gray-200/80 bg-white shadow-card;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+
+  .field-input {
+    @apply w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-ink shadow-sm transition placeholder:text-gray-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100;
+  }
+
+  .section-title {
+    @apply text-xl font-bold text-brand-800 sm:text-2xl;
+  }
+
+  .prose-legal {
+    @apply space-y-4 text-[15px] leading-relaxed text-ink-soft;
+  }
+
+  .prose-legal h2 {
+    @apply mt-8 text-lg font-bold text-brand-800;
+  }
+
+  .prose-legal h3 {
+    @apply mt-6 text-base font-bold text-ink;
+  }
+
+  .prose-legal ul {
+    @apply list-disc space-y-1.5 pl-5;
+  }
+
+  .prose-legal p {
+    @apply leading-relaxed;
+  }
+}

@@ -1,0 +1,10 @@
+# Netlify 設定（Next.js）
+# Netlify は Next.js を自動検出し、公式の Next.js Runtime プラグインを使います。
+# 「Add new site」→「Import an existing project」→ GitHub リポジトリを選べば、
+# 下記の Build command でデプロイされます（Publish directory はプラグインが管理）。
+
+[build]
+  command = "npm run build"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

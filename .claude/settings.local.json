@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -sI --max-time 10 https://nodejs.org/dist/index.json)",
+      "Bash(sysctl -n machdep.cpu.brand_string)",
+      "Bash(echo \"brand: $\\(sysctl -n machdep.cpu.brand_string 2>/dev/null\\)\")",
+      "Bash(sysctl -n sysctl.proc_translated)",
+      "Bash(echo \"translated\\(rosetta\\): $\\(sysctl -n sysctl.proc_translated 2>/dev/null\\)\")",
+      "Bash(sysctl -n hw.optional.arm64)"
+    ]
+  }
+}
