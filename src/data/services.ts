@@ -21,6 +21,8 @@ function tool(
     | "views"
     | "clicks"
     | "helpfulCount"
+    | "authorId"
+    | "publicAuthorName"
     | "authorName"
     | "authorLinks"
     | "aiToolsUsed"
@@ -40,6 +42,8 @@ function tool(
     views: 0,
     clicks: 0,
     helpfulCount: 0,
+    authorId: "apppark-official",
+    publicAuthorName: "AppPark運営",
     authorName: "AppPark運営",
     authorLinks: [],
     aiToolsUsed: [],

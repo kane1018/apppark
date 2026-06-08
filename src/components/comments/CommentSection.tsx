@@ -9,31 +9,22 @@ import {
 } from "@/lib/moderation";
 import { commentTypeLabels, formatDate, selectableCommentTypes } from "@/lib/labels";
 import { CommentRules } from "@/components/comments/CommentRules";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { LoginPanel } from "@/components/auth/LoginPanel";
 
 /**
- * コメント・返信機能（追加仕様）。
+ * コメント・返信機能（ログイン必須）。
  *
- * - 各サービス詳細ページに設置
- * - 返信は1階層まで
- * - 投稿時に危険度判定（src/lib/moderation.ts）を実行し、
- *   riskLevel に応じて published / pending / hidden を切り替える
- * - 各コメントに通報ボタン。通報数が REPORT_THRESHOLD に達すると確認待ちに
- * - 作者本人の返信には「作者」ラベル
+ * - コメント投稿・返信にはログインが必要（未ログインは案内＋ログインUI）
+ * - 公開表示名（displayName）のみ表示。メールは非公開。
+ * - 投稿者本人（user.id === serviceAuthorId）の発言には「作者」ラベル
+ * - 投稿時に危険度判定（moderation.ts）。リスクに応じて公開/確認中/確認待ち
+ * - 各コメントに通報ボタン。通報が一定数で確認待ち
  *
- * MVPは永続化なし（リロードで初期状態に戻ります）。
- * 後から Supabase / Firebase 等に接続する場合は、setComments の箇所を
- * API 呼び出しに置き換えてください。
+ * MVPは永続化なし（リロードで初期化）。Supabase等に接続する場合は
+ * setComments の箇所をDB保存に置き換えてください（userId 紐付け済み）。
  */
-
-const reportReasons = [
-  "誹謗中傷",
-  "スパム",
-  "権利侵害",
-  "個人情報",
-  "危険な内容",
-  "不適切な宣伝",
-  "その他",
-];
+const reportReasons = ["誹謗中傷", "スパム", "権利侵害", "個人情報", "危険な内容", "不適切な宣伝", "その他"];
 
 function newId(): string {
   return `cmt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -41,53 +32,44 @@ function newId(): string {
 
 export function CommentSection({
   serviceId,
+  serviceAuthorId,
   initialComments,
 }: {
   serviceId: string;
+  serviceAuthorId: string;
   initialComments: Comment[];
 }) {
+  const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>(initialComments);
 
   const topLevel = useMemo(
     () =>
       comments
         .filter((c) => c.parentId === null && c.moderationStatus !== "deleted")
-        .sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        ),
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
     [comments]
   );
 
   const repliesOf = (id: string) =>
     comments
       .filter((c) => c.parentId === id && c.moderationStatus !== "deleted")
-      .sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-  // 公開済みコメントの件数（見出し用）
-  const publishedCount = comments.filter(
-    (c) => c.moderationStatus === "published"
-  ).length;
+  const publishedCount = comments.filter((c) => c.moderationStatus === "published").length;
 
   async function addComment(input: {
     parentId: string | null;
-    authorName: string;
-    authorEmail?: string;
     commentType: CommentType;
     body: string;
-    isAuthorReply: boolean;
-  }): Promise<RiskLevel> {
-    const recentBodies = comments
-      .filter((c) => c.authorName === input.authorName)
-      .map((c) => c.body);
+  }): Promise<RiskLevel | null> {
+    if (!user) return null;
+    const isAuthor = user.id === serviceAuthorId;
+    const recentBodies = comments.filter((c) => c.userId === user.id).map((c) => c.body);
 
     const result = await moderateComment({
       body: input.body,
       commentType: input.commentType,
-      authorName: input.authorName,
+      authorName: user.displayName,
       recentBodies,
     });
 
@@ -96,20 +78,20 @@ export function CommentSection({
       id: newId(),
       serviceId,
       parentId: input.parentId,
-      authorName: input.authorName.trim() || "名無しさん",
-      authorEmail: input.authorEmail,
-      commentType: input.isAuthorReply ? "author-reply" : input.commentType,
+      userId: user.id,
+      authorName: user.displayName,
+      authorEmail: user.email,
+      commentType: isAuthor ? "author-reply" : input.commentType,
       body: input.body.trim(),
       riskScore: result.riskScore,
       riskLevel: result.riskLevel,
       moderationStatus: result.moderationStatus,
       moderationReason: result.moderationReason,
       reportedCount: 0,
-      isAuthorReply: input.isAuthorReply,
+      isAuthorReply: isAuthor,
       createdAt: now,
       updatedAt: now,
     };
-
     setComments((prev) => [...prev, comment]);
     return result.riskLevel;
   }
@@ -119,22 +101,9 @@ export function CommentSection({
       prev.map((c) => {
         if (c.id !== id) return c;
         const reportedCount = c.reportedCount + 1;
-        // 通報数が一定以上で、公開中なら確認待ち（pending）にする
         const moderationStatus =
-          reportedCount >= REPORT_THRESHOLD && c.moderationStatus === "published"
-            ? "pending"
-            : c.moderationStatus;
-        const moderationReason =
-          moderationStatus === "pending" && c.moderationStatus === "published"
-            ? `通報が${reportedCount}件に達したため確認待ち`
-            : c.moderationReason;
-        return {
-          ...c,
-          reportedCount,
-          moderationStatus,
-          moderationReason,
-          updatedAt: new Date().toISOString(),
-        };
+          reportedCount >= REPORT_THRESHOLD && c.moderationStatus === "published" ? "pending" : c.moderationStatus;
+        return { ...c, reportedCount, moderationStatus, updatedAt: new Date().toISOString() };
       })
     );
   }
@@ -148,10 +117,17 @@ export function CommentSection({
 
       <CommentRules />
 
-      {/* 新規コメント投稿フォーム */}
-      <CommentComposer mode="comment" onSubmit={(data) => addComment({ ...data, parentId: null })} />
+      {/* 新規コメント（ログイン必須） */}
+      {user ? (
+        <CommentComposer mode="comment" onSubmit={(d) => addComment({ ...d, parentId: null })} />
+      ) : (
+        <LoginRequired
+          heading="コメントするにはログインが必要です。"
+          body="感想、質問、改善要望、バグ報告を投稿するにはログインしてください。"
+        />
+      )}
 
-      {/* コメント一覧 */}
+      {/* 一覧 */}
       {topLevel.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-ink-faint">
           まだコメントはありません。
@@ -164,9 +140,10 @@ export function CommentSection({
             <li key={c.id}>
               <CommentItem
                 comment={c}
-                onReport={reportComment}
-                onReply={(data) => addComment({ ...data, parentId: c.id })}
                 replies={repliesOf(c.id)}
+                onReport={reportComment}
+                onReply={(d) => addComment({ ...d, parentId: c.id })}
+                canInteract={!!user}
               />
             </li>
           ))}
@@ -176,20 +153,30 @@ export function CommentSection({
   );
 }
 
-/* ------------------------------------------------------------------
- * 個々のコメント表示（＋返信）
- * ------------------------------------------------------------------ */
+function LoginRequired({ heading, body }: { heading: string; body: string }) {
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-card">
+      <h3 className="text-base font-bold text-brand-900">{heading}</h3>
+      <p className="mt-1.5 text-sm text-ink-soft">{body}</p>
+      <div className="mt-4 sm:max-w-sm">
+        <LoginPanel />
+      </div>
+    </div>
+  );
+}
 
 function CommentItem({
   comment,
   replies,
   onReport,
   onReply,
+  canInteract,
 }: {
   comment: Comment;
   replies: Comment[];
   onReport: (id: string) => void;
-  onReply: (data: ComposerData) => Promise<RiskLevel>;
+  onReply: (d: { commentType: CommentType; body: string }) => Promise<RiskLevel | null>;
+  canInteract: boolean;
 }) {
   const [showReply, setShowReply] = useState(false);
 
@@ -197,13 +184,8 @@ function CommentItem({
     <div className="rounded-2xl border border-gray-200 bg-white p-4">
       <CommentBody comment={comment} onReport={onReport} />
 
-      {/* 返信導線（トップレベルのみ。1階層まで） */}
       <div className="mt-2">
-        <button
-          type="button"
-          onClick={() => setShowReply((v) => !v)}
-          className="btn-ghost"
-        >
+        <button type="button" onClick={() => setShowReply((v) => !v)} className="btn-ghost">
           <svg viewBox="0 0 20 20" className="h-4 w-4" fill="currentColor" aria-hidden>
             <path d="M7.7 3.3a1 1 0 010 1.4L5.42 7H12a5 5 0 015 5v2a1 1 0 11-2 0v-2a3 3 0 00-3-3H5.41l2.3 2.3a1 1 0 11-1.42 1.4l-4-4a1 1 0 010-1.4l4-4a1 1 0 011.42 0z" />
           </svg>
@@ -213,18 +195,24 @@ function CommentItem({
 
       {showReply && (
         <div className="mt-3 border-l-2 border-brand-100 pl-3">
-          <CommentComposer
-            mode="reply"
-            onSubmit={async (data) => {
-              const level = await onReply(data);
-              setShowReply(false);
-              return level;
-            }}
-          />
+          {canInteract ? (
+            <CommentComposer
+              mode="reply"
+              onSubmit={async (d) => {
+                const level = await onReply(d);
+                setShowReply(false);
+                return level;
+              }}
+            />
+          ) : (
+            <LoginRequired
+              heading="返信するにはログインが必要です。"
+              body="ログインすると、このコメントに返信できます。"
+            />
+          )}
         </div>
       )}
 
-      {/* 返信一覧（1階層） */}
       {replies.length > 0 && (
         <ul className="mt-3 space-y-3 border-l-2 border-gray-100 pl-3">
           {replies.map((r) => (
@@ -238,14 +226,7 @@ function CommentItem({
   );
 }
 
-/** コメント本文＋メタ＋通報。モデレーション状態で表示を出し分け。 */
-function CommentBody({
-  comment,
-  onReport,
-}: {
-  comment: Comment;
-  onReport: (id: string) => void;
-}) {
+function CommentBody({ comment, onReport }: { comment: Comment; onReport: (id: string) => void }) {
   const [reporting, setReporting] = useState(false);
   const [reported, setReported] = useState(false);
 
@@ -265,26 +246,16 @@ function CommentBody({
         <span className="text-[11px] text-ink-faint">{formatDate(comment.createdAt)}</span>
       </div>
 
-      {/* 本文：hidden は内容を伏せる。
-          ※ 投稿者を萎縮させないため、判定理由は表示せず「確認待ち」のみを伝える。
-          （moderationReason はデータには保持され、後の管理画面で確認できます） */}
       {comment.moderationStatus === "hidden" ? (
-        <p className="mt-2 rounded-lg bg-gray-50 px-3 py-2 text-xs text-ink-faint">
-          このコメントは確認待ちです。
-        </p>
+        <p className="mt-2 rounded-lg bg-gray-50 px-3 py-2 text-xs text-ink-faint">このコメントは確認待ちです。</p>
       ) : (
-        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink-soft">
-          {comment.body}
-        </p>
+        <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink-soft">{comment.body}</p>
       )}
 
       {comment.moderationStatus === "pending" && (
-        <p className="mt-1.5 text-[11px] text-amber-600">
-          ※ このコメントは確認中です。確認後に掲載される場合があります。
-        </p>
+        <p className="mt-1.5 text-[11px] text-amber-600">※ このコメントは確認中です。確認後に掲載される場合があります。</p>
       )}
 
-      {/* 通報 */}
       <div className="mt-2 flex items-center gap-3">
         {reported ? (
           <span className="text-[11px] text-ink-faint">
@@ -293,19 +264,10 @@ function CommentBody({
         ) : reporting ? (
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] font-semibold text-ink-soft">通報理由：</span>
-            <select
-              aria-label="通報理由"
-              className="rounded-lg border border-gray-300 px-2 py-1 text-xs"
-              defaultValue=""
-              id={`report-${comment.id}`}
-            >
-              <option value="" disabled>
-                選択
-              </option>
+            <select aria-label="通報理由" className="rounded-lg border border-gray-300 px-2 py-1 text-xs" defaultValue="">
+              <option value="" disabled>選択</option>
               {reportReasons.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
+                <option key={r} value={r}>{r}</option>
               ))}
             </select>
             <button
@@ -319,11 +281,7 @@ function CommentBody({
             >
               通報する
             </button>
-            <button
-              type="button"
-              onClick={() => setReporting(false)}
-              className="text-xs text-ink-faint hover:text-ink"
-            >
+            <button type="button" onClick={() => setReporting(false)} className="text-xs text-ink-faint hover:text-ink">
               やめる
             </button>
           </div>
@@ -356,61 +314,36 @@ function ModerationBadge({ status }: { status: Comment["moderationStatus"] }) {
   } as const;
   const m = map[status];
   return (
-    <span
-      className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-bold ring-1 ring-inset ${m.cls}`}
-    >
+    <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-bold ring-1 ring-inset ${m.cls}`}>
       {m.label}
     </span>
   );
 }
 
-/* ------------------------------------------------------------------
- * 投稿フォーム（新規コメント / 返信 共通）
- * ------------------------------------------------------------------ */
-
-interface ComposerData {
-  authorName: string;
-  authorEmail?: string;
-  commentType: CommentType;
-  body: string;
-  isAuthorReply: boolean;
-}
-
+/** コメント／返信フォーム（ログイン済み前提。識別情報はユーザーから取得） */
 function CommentComposer({
   mode,
   onSubmit,
 }: {
   mode: "comment" | "reply";
-  onSubmit: (data: ComposerData) => Promise<RiskLevel>;
+  onSubmit: (data: { commentType: CommentType; body: string }) => Promise<RiskLevel | null>;
 }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const { user } = useAuth();
   const [type, setType] = useState<CommentType>("impression");
   const [body, setBody] = useState("");
-  const [isAuthor, setIsAuthor] = useState(false);
   const [agree, setAgree] = useState(false);
-  const [message, setMessage] = useState<{ level: RiskLevel; text: string } | null>(
-    null
-  );
+  const [message, setMessage] = useState<{ level: RiskLevel; text: string } | null>(null);
   const [pending, setPending] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!body.trim() || !agree || pending) return;
     setPending(true);
-    const level = await onSubmit({
-      authorName: name,
-      authorEmail: email || undefined,
-      commentType: type,
-      body,
-      isAuthorReply: isAuthor,
-    });
-    setMessage({ level, text: submissionMessage(level) });
+    const level = await onSubmit({ commentType: type, body });
+    if (level) setMessage({ level, text: submissionMessage(level) });
     setPending(false);
-    // フォームをリセット（メッセージは残す）
     setBody("");
     setAgree(false);
-    setIsAuthor(false);
   }
 
   const messageStyle: Record<RiskLevel, string> = {
@@ -422,96 +355,43 @@ function CommentComposer({
   return (
     <form
       onSubmit={handleSubmit}
-      className={
-        mode === "comment"
-          ? "rounded-2xl border border-gray-200 bg-white p-4 sm:p-5"
-          : "rounded-xl border border-gray-200 bg-white p-3"
-      }
+      className={mode === "comment" ? "rounded-2xl border border-gray-200 bg-white p-4 sm:p-5" : "rounded-xl border border-gray-200 bg-white p-3"}
     >
-      {mode === "comment" && (
-        <h3 className="mb-3 text-sm font-bold text-brand-800">コメントを投稿する</h3>
-      )}
+      {mode === "comment" && <h3 className="mb-3 text-sm font-bold text-brand-800">コメントを投稿する</h3>}
 
       {message && (
-        <div className={`mb-3 rounded-lg border px-3 py-2 text-sm ${messageStyle[message.level]}`}>
-          {message.text}
-        </div>
+        <div className={`mb-3 rounded-lg border px-3 py-2 text-sm ${messageStyle[message.level]}`}>{message.text}</div>
       )}
 
-      <div className={mode === "comment" ? "grid gap-3 sm:grid-cols-2" : "space-y-3"}>
-        <div>
-          <label className="field-label" htmlFor={`${mode}-name`}>
-            表示名
-          </label>
-          <input
-            id={`${mode}-name`}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="field-input"
-            placeholder="ニックネーム可"
-          />
-        </div>
-        {mode === "comment" && (
-          <div>
-            <label className="field-label" htmlFor={`${mode}-email`}>
-              メールアドレス（非公開・任意）
-            </label>
-            <input
-              id={`${mode}-email`}
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="field-input"
-              placeholder="公開されません"
-            />
-          </div>
-        )}
-      </div>
+      <p className="mb-3 text-xs text-ink-faint">
+        投稿者：<span className="font-semibold text-ink-soft">{user?.displayName}</span>（公開表示名）
+      </p>
 
       {mode === "comment" && (
-        <div className="mt-3">
-          <label className="field-label" htmlFor={`${mode}-type`}>
-            コメントの種類
-          </label>
+        <div className="mb-3">
+          <label className="field-label" htmlFor="comment-type">コメントの種類</label>
           <select
-            id={`${mode}-type`}
+            id="comment-type"
             value={type}
             onChange={(e) => setType(e.target.value as CommentType)}
             className="field-input"
           >
             {selectableCommentTypes.map((t) => (
-              <option key={t} value={t}>
-                {commentTypeLabels[t]}
-              </option>
+              <option key={t} value={t}>{commentTypeLabels[t]}</option>
             ))}
           </select>
         </div>
       )}
 
-      <div className="mt-3">
-        <label className="field-label" htmlFor={`${mode}-body`}>
-          {mode === "reply" ? "返信内容" : "コメント本文"}
-        </label>
-        <textarea
-          id={`${mode}-body`}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          rows={mode === "reply" ? 2 : 3}
-          required
-          className="field-input resize-y"
-          placeholder="建設的な感想・質問・改善要望を歓迎します。個人情報は書かないでください。"
-        />
-      </div>
-
-      <label className="mt-3 flex items-center gap-2 text-xs font-semibold text-ink-soft">
-        <input
-          type="checkbox"
-          checked={isAuthor}
-          onChange={(e) => setIsAuthor(e.target.checked)}
-          className="h-4 w-4 rounded border-gray-300 text-accent-500 focus:ring-accent-400"
-        />
-        これは作者本人の返信です（「作者」ラベルが付きます）
-      </label>
+      <textarea
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        rows={mode === "reply" ? 2 : 3}
+        required
+        className="field-input resize-y"
+        placeholder="建設的な感想・質問・改善要望を歓迎します。個人情報は書かないでください。"
+        aria-label={mode === "reply" ? "返信内容" : "コメント本文"}
+      />
 
       <label className="mt-2 flex items-start gap-2 text-xs text-ink-soft">
         <input
@@ -521,9 +401,7 @@ function CommentComposer({
           className="mt-0.5 h-4 w-4 rounded border-gray-300 text-accent-500 focus:ring-accent-400"
         />
         <span>
-          <a href="/terms" className="text-brand-600 underline-offset-2 hover:underline">
-            利用規約
-          </a>
+          <a href="/terms" className="text-brand-600 underline-offset-2 hover:underline">利用規約</a>
           ・コメントルールに同意します。
         </span>
       </label>

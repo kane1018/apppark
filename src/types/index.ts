@@ -110,6 +110,10 @@ export interface Service {
   useCases: string[];
   /** 注意点 */
   cautions: string[];
+  /** 投稿者のユーザーID（運営作成は "apppark-official"）。編集・削除申請の権限判定に使用 */
+  authorId: string;
+  /** 公開表示名（公開ページに表示される投稿者名） */
+  publicAuthorName: string;
   authorName: string;
   authorComment: string;
   authorLinks: AuthorLink[];
@@ -161,8 +165,11 @@ export interface Comment {
   serviceId: string;
   /** 親コメントID（返信の場合のみ）。トップレベルは null。 */
   parentId: string | null;
+  /** 投稿ユーザーID（ログイン必須）。null は旧データ等。 */
+  userId: string | null;
+  /** 公開表示名（コメント欄に表示される名前） */
   authorName: string;
-  /** 非公開。表示には使わない。将来のログイン連携用。 */
+  /** 非公開。表示には使わない。 */
   authorEmail?: string;
   commentType: CommentType;
   body: string;

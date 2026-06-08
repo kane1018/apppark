@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BetaBanner } from "@/components/BetaBanner";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 import { JsonLd } from "@/components/JsonLd";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 
@@ -69,10 +70,12 @@ export default function RootLayout({
       <body className="flex min-h-screen flex-col">
         <JsonLd data={websiteJsonLd()} />
         <JsonLd data={organizationJsonLd()} />
-        <BetaBanner />
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <AuthProvider>
+          <BetaBanner />
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   );

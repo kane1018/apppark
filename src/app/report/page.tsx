@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { buildMetadata, breadcrumbJsonLd, webPageJsonLd } from "@/lib/seo";
+import { siteConfig } from "@/config/site";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ReportForm } from "@/components/ReportForm";
 import { JsonLd } from "@/components/JsonLd";
+import { AuthGate } from "@/components/auth/AuthGate";
 
 export const metadata: Metadata = buildMetadata({
   title: "通報・削除依頼",
@@ -40,9 +42,26 @@ export default function ReportPage() {
           </p>
         </header>
 
-        <div className="card p-5 sm:p-6">
-          <ReportForm />
-        </div>
+        {siteConfig.requireLoginForReport ? (
+          <AuthGate
+            returnTo="/report"
+            heading="通報・削除依頼にはログインが必要です。"
+            body="対応状況のご連絡や本人確認のため、ログインをお願いしています。"
+          >
+            <div className="card p-5 sm:p-6">
+              <ReportForm />
+            </div>
+          </AuthGate>
+        ) : (
+          <>
+            <p className="mb-3 rounded-xl bg-gray-50 px-4 py-3 text-xs text-ink-faint">
+              ※ 通報はログインなしでも送信できます。ログインしていただくと、対応状況のご連絡がスムーズです。
+            </p>
+            <div className="card p-5 sm:p-6">
+              <ReportForm />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

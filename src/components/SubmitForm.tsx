@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { categories } from "@/data/categories";
 import { purposes } from "@/data/purposes";
 import { pricingLabels, statusLabels } from "@/lib/labels";
 import { siteConfig } from "@/config/site";
 import type { Pricing, ServiceStatus } from "@/types";
 import { RecruitmentStatusField } from "@/components/recruitment/RecruitmentStatusField";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 /**
  * 投稿申請フォーム（セクション14）。
@@ -22,11 +24,13 @@ const IMAGE_URL_TITLE =
   "http(s):// で始まり、.jpg / .jpeg / .png / .webp / .gif で終わる画像URLを入力してください。";
 
 export function SubmitForm() {
+  const { user } = useAuth();
   const [submitted, setSubmitted] = useState(false);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // TODO: 本番ではここで送信先へ POST する（FormData を利用）
+    // TODO: 本番ではここで送信先へ POST する（FormData を利用）。
+    // 投稿者の紐付け：authorId = user.id, publicAuthorName = user.displayName を一緒に送信する。
     // const data = new FormData(e.currentTarget);
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -54,9 +58,26 @@ export function SubmitForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      <Fieldset legend="申請者情報">
-        <Field label="投稿者名" name="authorName" required placeholder="お名前またはニックネーム" />
-        <Field label="メールアドレス" name="email" type="email" required placeholder="連絡用（公開されません）" />
+      <Fieldset legend="申請者情報（ログイン中）">
+        {/* 公開表示名・メールはログイン情報から。サービスにはこの公開表示名が紐づきます */}
+        <input type="hidden" name="authorId" value={user?.id ?? ""} />
+        <input type="hidden" name="publicAuthorName" value={user?.displayName ?? ""} />
+        <div className="rounded-xl bg-gray-50 px-4 py-3 text-sm">
+          <p>
+            公開表示名：<span className="font-bold text-ink">{user?.displayName}</span>
+            <Link href="/mypage" className="ml-2 text-xs font-semibold text-brand-600 underline-offset-2 hover:underline">
+              変更
+            </Link>
+          </p>
+          <p className="mt-1 text-xs text-ink-faint">
+            メールアドレスはログイン情報を使用します（公開されません）。掲載時はこの公開表示名が投稿者として表示されます。
+          </p>
+        </div>
+        <Field
+          label="連絡先氏名（運営確認用・非公開・任意）"
+          name="contactName"
+          placeholder="公開されません"
+        />
       </Fieldset>
 
       <Fieldset legend="サービス基本情報">

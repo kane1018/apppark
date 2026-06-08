@@ -25,6 +25,7 @@ import { ExternalServiceButton } from "@/components/ExternalServiceButton";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { SimilarServices } from "@/components/SimilarServices";
 import { ServiceGallery } from "@/components/ServiceGallery";
+import { HelpfulButton } from "@/components/HelpfulButton";
 import { CommentSection } from "@/components/comments/CommentSection";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { JsonLd } from "@/components/JsonLd";
@@ -196,6 +197,9 @@ export default function ServiceDetailPage({
                   </span>
                 </div>
               )}
+
+              {/* 役に立った（ログイン必須） */}
+              <HelpfulButton />
             </div>
           </div>
         </section>
@@ -295,7 +299,11 @@ export default function ServiceDetailPage({
 
         {/* 利用者の感想・質問はコメント欄で受け付けます（実際に投稿されたもののみ表示） */}
         <section>
-          <CommentSection serviceId={service.id} initialComments={comments} />
+          <CommentSection
+            serviceId={service.id}
+            serviceAuthorId={service.authorId}
+            initialComments={comments}
+          />
         </section>
 
         {/* 9. 改善要望・バグ報告・通報フォーム */}

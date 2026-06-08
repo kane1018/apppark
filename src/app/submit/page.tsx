@@ -5,6 +5,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SubmitForm } from "@/components/SubmitForm";
 import { CreatorBenefits } from "@/components/CreatorBenefits";
 import { JsonLd } from "@/components/JsonLd";
+import { AuthGate } from "@/components/auth/AuthGate";
 
 export const metadata: Metadata = buildMetadata({
   title: "サービス掲載申請",
@@ -59,8 +60,14 @@ export default function SubmitPage() {
           </a>
         </div>
 
-        <h2 className="mb-3 text-lg font-bold text-brand-900">掲載申請フォーム</h2>
-        <SubmitForm />
+        <AuthGate
+          returnTo="/submit"
+          heading="サービスを掲載するにはログインが必要です。"
+          body="AppParkでは、掲載内容の確認や投稿者への連絡のため、サービス投稿にはログインをお願いしています。ログイン後、Webサービス・便利ツールの掲載申請ができます。"
+        >
+          <h2 className="mb-3 text-lg font-bold text-brand-900">掲載申請フォーム</h2>
+          <SubmitForm />
+        </AuthGate>
       </div>
     </div>
   );
