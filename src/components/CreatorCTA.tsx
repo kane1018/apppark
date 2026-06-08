@@ -22,19 +22,20 @@ export function CreatorCTA() {
               Webサービスを作った方へ
             </p>
             <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">
-              作れる時代から、届けられる時代へ。
+              あなたのWebサービス専用の紹介ページを作成できます。
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-white/80">
-              AIによって、Webサービスや便利ツールは個人でも作れる時代になりました。{siteConfig.name}は、個人や小さなチームが作ったWebサービスを、必要としている人へ届けるための場所です。作って終わりにせず、使ってくれる人へ届けるための発表・発見プラットフォームとしてご活用ください。
+              {siteConfig.name}では、個人開発・AIツール・便利なWebサービスの掲載申請を受け付けています。掲載されたサービスは、カテゴリ・目的別ページに表示され、公式サイトやSNSへ誘導できます。利用者コメント、改善要望、バグ報告、共同開発者募集、スポンサー募集、譲渡・購入相談ステータスにも対応しています。
             </p>
-            <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/90">
-              あなたのWebサービス専用の紹介ページを無料でつくれます
+            <p className="mt-3 rounded-lg bg-white/10 px-3 py-2 text-xs leading-relaxed text-white/90">
+              <span className="font-bold text-white">作れる時代から、届けられる時代へ。</span>
+              AIによって、Webサービスや便利ツールは個人でも作れる時代になりました。{siteConfig.name}は、作ったサービスを必要としている人へ届けるための場所です。
             </p>
           </div>
 
           <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">
             <Link href="/submit" className="btn-primary whitespace-nowrap">
-              無料で掲載申請する
+              掲載申請する
             </Link>
             <Link
               href="/guidelines"

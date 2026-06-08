@@ -154,7 +154,9 @@ export function CommentSection({
       {/* コメント一覧 */}
       {topLevel.length === 0 ? (
         <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-ink-faint">
-          まだコメントはありません。最初のコメントを投稿してみましょう。
+          まだコメントはありません。
+          <br />
+          このサービスを使った感想や改善要望を投稿できます。
         </p>
       ) : (
         <ul className="space-y-4">

@@ -105,7 +105,9 @@ export function organizationJsonLd() {
     name: siteConfig.organization.name,
     url: siteConfig.url,
     logo: `${siteConfig.url}${siteConfig.organization.logo}`,
-    email: siteConfig.organization.contactEmail,
+    ...(siteConfig.organization.contactEmail
+      ? { email: siteConfig.organization.contactEmail }
+      : {}),
   };
 }
 

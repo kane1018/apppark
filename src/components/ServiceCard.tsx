@@ -3,16 +3,20 @@ import type { Service } from "@/types";
 import { getCategoryName } from "@/data/categories";
 import { getPurposeName } from "@/data/purposes";
 import { formatDate } from "@/lib/labels";
+import { isInternalToolUrl } from "@/data/services";
 import { PricingBadge, SponsorTag, StatusBadge } from "@/components/badges";
-import { StatsDisplay } from "@/components/StatsDisplay";
 import { Thumbnail } from "@/components/Thumbnail";
 import { RecruitmentStatusBadges } from "@/components/recruitment/RecruitmentStatusBadges";
 
 /**
- * サービスカード（セクション12）。
- * 閲覧者が一目で判断できる情報を表示。スポンサーの場合はラベルを明示。
+ * サービスカード。閲覧者が一目で判断できる情報を表示。
+ * - 運営作成ツールは「運営作成」を明示し、「使ってみる」で内部ツールへ
+ * - 外部サービスは「サービスを見る ↗」で別タブへ
+ * - スポンサーは必ずラベルを明示
  */
 export function ServiceCard({ service }: { service: Service }) {
+  const internal = isInternalToolUrl(service.url);
+
   return (
     <article className="card group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-card-hover">
       <div className="relative">
@@ -21,9 +25,9 @@ export function ServiceCard({ service }: { service: Service }) {
         </Link>
         <div className="absolute left-2 top-2 flex gap-1.5">
           {service.isSponsored && <SponsorTag label={service.sponsorLabel ?? "PR"} />}
-          {service.isDemo && (
-            <span className="rounded-md bg-black/55 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur">
-              デモ
+          {service.isFirstParty && (
+            <span className="rounded-md bg-brand-900/70 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur">
+              運営作成
             </span>
           )}
         </div>
@@ -73,11 +77,6 @@ export function ServiceCard({ service }: { service: Service }) {
         )}
 
         <div className="mt-auto space-y-3 pt-1">
-          <StatsDisplay
-            views={service.views}
-            clicks={service.clicks}
-            helpfulCount={service.helpfulCount}
-          />
           <p className="text-[11px] text-ink-faint">更新日：{formatDate(service.updatedAt)}</p>
 
           <div className="flex gap-2">
@@ -87,14 +86,23 @@ export function ServiceCard({ service }: { service: Service }) {
             >
               詳細を見る
             </Link>
-            <a
-              href={service.url}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="flex-1 rounded-lg bg-accent-500 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-accent-600"
-            >
-              サービスを見る ↗
-            </a>
+            {internal ? (
+              <Link
+                href={service.url}
+                className="flex-1 rounded-lg bg-accent-500 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-accent-600"
+              >
+                使ってみる
+              </Link>
+            ) : (
+              <a
+                href={service.url}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="flex-1 rounded-lg bg-accent-500 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-accent-600"
+              >
+                サービスを見る ↗
+              </a>
+            )}
           </div>
         </div>
       </div>

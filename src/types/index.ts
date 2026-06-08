@@ -122,9 +122,12 @@ export interface Service {
   isSponsored: boolean;
   /** 「スポンサー」「PR」「広告」のいずれか */
   sponsorLabel?: "スポンサー" | "PR" | "広告";
-  /** デモデータであることを示すフラグ（実在サービスとの誤認防止） */
-  isDemo: boolean;
-  /** 利用者の声（デモ） */
+  /**
+   * AppPark運営が作成・提供するツールか（true なら「運営作成」表示、url は内部 /tools/...）。
+   * 外部の投稿サービスは false。
+   */
+  isFirstParty: boolean;
+  /** 利用者の声（実際に寄せられたもののみ。無ければ空配列） */
   voices: UsageVoice[];
 }
 

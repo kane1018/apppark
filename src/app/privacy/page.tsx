@@ -63,8 +63,8 @@ export default function PrivacyPage() {
 
         <h2>7. お問い合わせ窓口</h2>
         <p>
-          本ポリシーに関するお問い合わせは、{siteConfig.organization.name}（
-          {siteConfig.organization.contactEmail}）までご連絡ください。
+          本ポリシーに関するお問い合わせは、{siteConfig.organization.name}まで、
+          お問い合わせフォームよりご連絡ください。
         </p>
       </div>
     </LegalPage>

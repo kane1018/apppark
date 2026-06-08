@@ -35,7 +35,7 @@ export function SponsorBanner({
               この枠はスポンサー掲載枠（広告）です
             </p>
             <p className="mt-0.5 text-xs text-ink-soft">
-              {siteConfig.name}では、Webサービスを探す人にPRできるスポンサー枠を用意しています。デモ表示のため、現在は広告主はいません。
+              {siteConfig.name}では、Webサービスを探す人・AIツールに関心のある人にPRできるスポンサー枠を募集しています。
             </p>
           </div>
         </div>

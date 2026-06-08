@@ -44,7 +44,7 @@ export function SponsorPricingTable() {
         })}
       </div>
       <p className="rounded-xl bg-gray-50 px-4 py-3 text-xs text-ink-faint">
-        ※ 上記はすべて<strong className="font-bold text-ink-soft">仮料金</strong>です。β版のため、料金・枠は要相談。
+        ※ 上記はすべて<strong className="font-bold text-ink-soft">参考価格</strong>です。料金・枠・内容は<strong className="font-bold text-ink-soft">要相談</strong>。
         いまは<strong className="font-bold text-accent-700">初期掲載パートナー</strong>を募集しています（特別条件をご相談ください）。
       </p>
     </div>

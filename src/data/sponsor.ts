@@ -1,7 +1,7 @@
 /**
- * スポンサー掲載の枠・仮料金（セクション16）。
+ * スポンサー掲載の枠・参考価格。
  * 料金や枠を変更する場合はこのファイルを編集してください。
- * ※ あくまで仮料金です。初期キャンペーン価格は要相談。
+ * ※ いずれも参考価格です（要相談）。初期掲載パートナーには特別条件で相談可。
  */
 
 export interface SponsorPlan {
@@ -50,8 +50,15 @@ export const sponsorPlans: SponsorPlan[] = [
   {
     name: "ショート動画紹介付き掲載",
     price: "要相談",
-    unit: "将来プラン",
-    description: "サービスをショート動画で紹介＋掲載。提供開始時にご案内します。",
+    unit: "参考価格",
+    description: "サービスをショート動画で紹介＋掲載。内容に応じてご相談します。",
+    upcoming: true,
+  },
+  {
+    name: "SNS紹介付き掲載",
+    price: "要相談",
+    unit: "参考価格",
+    description: "AppPark公式SNSでの紹介＋掲載。リーチに応じてご相談します。",
     upcoming: true,
   },
 ];

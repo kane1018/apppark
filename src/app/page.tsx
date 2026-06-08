@@ -24,8 +24,8 @@ const fresh = getNewServices(
 const howToSteps = [
   { title: "目的やカテゴリから探す", desc: "やりたいことや分野から、気になるサービスを見つけます。" },
   { title: "詳細ページで確認する", desc: "何ができるか・料金・使い方・注意点をチェックします。" },
-  { title: "外部リンクから実際に使う", desc: "公式サイトを開いて、実際に試してみます。" },
-  { title: "役に立ったら反応する", desc: "「役に立った」やコメントで、よかった点を残せます。" },
+  { title: "そのまま使う／公式サイトへ", desc: "運営ツールはその場で、外部サービスは公式サイトを開いて使います。" },
+  { title: "コメントで感想を伝える", desc: "使ってみた感想・改善要望・質問をコメントで残せます。" },
   { title: "問題があれば報告する", desc: "リンク切れや不適切な内容は通報できます。" },
 ];
 
@@ -44,6 +44,9 @@ export default function HomePage() {
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/80 sm:text-base">
             {siteConfig.heroSubtitle}
+          </p>
+          <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/60 sm:text-sm">
+            {siteConfig.heroLead}
           </p>
 
           <div className="mt-7 max-w-2xl">
@@ -107,11 +110,11 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 4. 注目サービス（＋スポンサー枠） */}
+        {/* 4. 今すぐ使えるツール */}
         <section>
           <SectionHeading
-            title="注目サービス"
-            description="運営が選んだ、いま注目のWebサービス。"
+            title="今すぐ使えるツール"
+            description="運営が作成した、ブラウザですぐ使える無料ツール。"
             moreHref="/services"
           />
           <div className="mb-4">
@@ -120,38 +123,17 @@ export default function HomePage() {
           <ServiceGrid services={featured} />
         </section>
 
-        {/* 5. 新着サービス */}
-        <section>
-          <SectionHeading
-            title="新着サービス"
-            description="最近掲載されたWebサービス。"
-            moreHref="/services?sort=new"
-          />
-          <ServiceGrid services={fresh} />
-        </section>
-
-        {/* 6. よく使われているサービス（β版：実データ集計まで準備中） */}
-        <section>
-          <SectionHeading
-            title="よく使われているサービス"
-            description="実際の閲覧数・利用状況にもとづくランキングです。"
-          />
-          <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
-            <p className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-ink-faint">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent-400" aria-hidden />
-              集計準備中（β版）
-            </p>
-            <p className="mt-3 text-sm text-ink-soft">
-              よく使われているサービスのランキングは、実際の利用データが集まり次第お見せします。
-            </p>
-            <Link
-              href="/services"
-              className="mt-4 inline-block text-sm font-bold text-brand-600 hover:text-brand-800"
-            >
-              いまはすべてのサービスから探す →
-            </Link>
-          </div>
-        </section>
+        {/* 5. 新着 */}
+        {fresh.length > 0 && (
+          <section>
+            <SectionHeading
+              title="新着"
+              description="最近掲載されたサービス・ツール。"
+              moreHref="/services?sort=new"
+            />
+            <ServiceGrid services={fresh} />
+          </section>
+        )}
 
         {/* 7. 使い方 */}
         <section className="rounded-2xl bg-brand-50/70 p-6 sm:p-8">

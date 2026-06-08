@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo";
-import { siteConfig } from "@/config/site";
 import { LegalPage } from "@/components/LegalPage";
 
 export const metadata: Metadata = buildMetadata({
@@ -100,8 +99,7 @@ export default function TermsPage() {
 
         <h2>第14条（お問い合わせ）</h2>
         <p>
-          本規約に関するお問い合わせは、{siteConfig.organization.contactEmail}{" "}
-          またはお問い合わせフォームよりご連絡ください。
+          本規約に関するお問い合わせは、お問い合わせフォームよりご連絡ください。
         </p>
       </div>
     </LegalPage>

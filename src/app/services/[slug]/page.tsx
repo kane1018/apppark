@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import {
   getAllServices,
   getServiceBySlug,
+  isInternalToolUrl,
 } from "@/data/services";
 import { getSeedCommentsForService } from "@/data/comments";
 import { getCategory, getCategoryName } from "@/data/categories";
@@ -21,11 +22,9 @@ import { Thumbnail } from "@/components/Thumbnail";
 import { TagList } from "@/components/TagList";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ExternalServiceButton } from "@/components/ExternalServiceButton";
-import { UsageVoiceSection } from "@/components/UsageVoiceSection";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { SimilarServices } from "@/components/SimilarServices";
 import { ServiceGallery } from "@/components/ServiceGallery";
-import { HelpfulButton } from "@/components/HelpfulButton";
 import { CommentSection } from "@/components/comments/CommentSection";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { JsonLd } from "@/components/JsonLd";
@@ -62,6 +61,7 @@ export default function ServiceDetailPage({
 
   const similar = getSimilarServices(getAllServices(), service, 3);
   const comments = getSeedCommentsForService(service.id);
+  const internal = isInternalToolUrl(service.url);
 
   const crumbs = [
     { name: "ホーム", path: "/" },
@@ -99,9 +99,9 @@ export default function ServiceDetailPage({
                 {service.isSponsored && (
                   <SponsorTag label={service.sponsorLabel ?? "PR"} />
                 )}
-                {service.isDemo && (
-                  <span className="rounded-md bg-black/55 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur">
-                    デモデータ
+                {service.isFirstParty && (
+                  <span className="rounded-md bg-brand-900/70 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur">
+                    運営作成
                   </span>
                 )}
               </div>
@@ -149,12 +149,14 @@ export default function ServiceDetailPage({
 
               <TagList tags={service.tags} linkToSearch />
 
-              <StatsDisplay
-                views={service.views}
-                clicks={service.clicks}
-                helpfulCount={service.helpfulCount}
-                variant="cards"
-              />
+              {/* 利用実績の数値は、実データの集計が整ってから表示します（架空の数値は出しません） */}
+              {siteConfig.showUsageStats && (
+                <StatsDisplay
+                  views={service.views}
+                  clicks={service.clicks}
+                  helpfulCount={service.helpfulCount}
+                />
+              )}
 
               <dl className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-ink-faint">
                 <div className="flex gap-1">
@@ -165,23 +167,35 @@ export default function ServiceDetailPage({
                   <dt>更新日：</dt>
                   <dd className="font-semibold text-ink-soft">{formatDate(service.updatedAt)}</dd>
                 </div>
+                <div className="flex gap-1">
+                  <dt>コメント：</dt>
+                  <dd className="font-semibold text-ink-soft">{comments.length}件</dd>
+                </div>
               </dl>
 
               {/* 2. メインCTA */}
-              <div className="flex flex-col gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:items-center">
-                <ExternalServiceButton url={service.url} serviceName={service.name} variant="primary">
-                  サービスを見る ↗
-                </ExternalServiceButton>
-                <ExternalServiceButton url={service.url} serviceName={service.name} variant="outline">
-                  公式サイトを開く ↗
-                </ExternalServiceButton>
-                <span className="text-[11px] text-ink-faint sm:ml-1">
-                  ※ AppParkの外にある外部サービスが開きます
-                </span>
-              </div>
-
-              {/* 役に立った リアクション */}
-              <HelpfulButton initialCount={service.helpfulCount} />
+              {internal ? (
+                <div className="flex flex-col gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:items-center">
+                  <Link href={service.url} className="btn-primary w-full sm:w-auto">
+                    このツールを使う
+                  </Link>
+                  <span className="text-[11px] text-ink-faint sm:ml-1">
+                    ※ AppPark内で動く運営作成ツールです（ブラウザ内で完結）
+                  </span>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:items-center">
+                  <ExternalServiceButton url={service.url} serviceName={service.name} variant="primary">
+                    サービスを見る ↗
+                  </ExternalServiceButton>
+                  <ExternalServiceButton url={service.url} serviceName={service.name} variant="outline">
+                    公式サイトを開く ↗
+                  </ExternalServiceButton>
+                  <span className="text-[11px] text-ink-faint sm:ml-1">
+                    ※ AppParkの外にある外部サービスが開きます
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -193,12 +207,9 @@ export default function ServiceDetailPage({
           </p>
         </DetailBlock>
 
-        {/* サービス画面（スクリーンショット）：サブ画像がある場合のみ表示 */}
+        {/* サービス画面（スクリーンショット）：画像がある場合のみ表示 */}
         {service.galleryImageUrls.length > 0 && (
-          <DetailBlock
-            title="サービス画面（スクリーンショット）"
-            note={service.isDemo ? "※ デモ用のサンプル画像です。" : undefined}
-          >
+          <DetailBlock title="サービス画面（スクリーンショット）">
             <ServiceGallery images={service.galleryImageUrls} serviceName={service.name} />
           </DetailBlock>
         )}
@@ -282,12 +293,7 @@ export default function ServiceDetailPage({
           </ul>
         </DetailBlock>
 
-        {/* 8. 利用者の声 */}
-        <DetailBlock title="利用者の声" note="※ デモデータです。実際の利用者の声ではありません。">
-          <UsageVoiceSection voices={service.voices} />
-        </DetailBlock>
-
-        {/* コメント・返信（追加仕様） */}
+        {/* 利用者の感想・質問はコメント欄で受け付けます（実際に投稿されたもののみ表示） */}
         <section>
           <CommentSection serviceId={service.id} initialComments={comments} />
         </section>
