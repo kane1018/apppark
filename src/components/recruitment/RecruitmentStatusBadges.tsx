@@ -1,5 +1,5 @@
 import { IconGlyph } from "@/components/icons";
-import { recruitmentMeta } from "@/lib/recruitment";
+import { recruitmentMeta, recruitmentStatuses } from "@/lib/recruitment";
 import type { RecruitmentStatus } from "@/types";
 
 /**
@@ -31,8 +31,12 @@ export function RecruitmentStatusBadges({
 }) {
   if (!statuses || statuses.length === 0) return null;
 
-  const shown = typeof max === "number" ? statuses.slice(0, max) : statuses;
-  const rest = statuses.length - shown.length;
+  // 優先度順に並べ替え（譲渡・購入相談は後方→カードでは「ほか◯件」に回りやすい）
+  const ordered = [...statuses].sort(
+    (a, b) => recruitmentStatuses.indexOf(a) - recruitmentStatuses.indexOf(b)
+  );
+  const shown = typeof max === "number" ? ordered.slice(0, max) : ordered;
+  const rest = ordered.length - shown.length;
 
   return (
     <ul className="flex flex-wrap gap-1.5">

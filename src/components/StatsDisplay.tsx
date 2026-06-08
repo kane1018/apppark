@@ -1,19 +1,25 @@
 import { formatNumber } from "@/lib/labels";
+import { siteConfig } from "@/config/site";
 
 /**
  * 閲覧数・外部クリック数・役に立った数の表示（セクション12・13）。
- * MVPはデモデータ。本番では実データのみを表示する前提です。
+ *
+ * β版（siteConfig.useDemoStats = true）では、実績に見えすぎないよう
+ * 「集計準備中（デモ数値）」として控えめに表示します。
+ * 実データ集計を始めたら siteConfig.useDemoStats を false にしてください。
  */
 export function StatsDisplay({
   views,
   clicks,
   helpfulCount,
   variant = "inline",
+  demo = siteConfig.useDemoStats,
 }: {
   views: number;
   clicks: number;
   helpfulCount: number;
   variant?: "inline" | "cards";
+  demo?: boolean;
 }) {
   const items = [
     { label: "閲覧数", value: views, icon: EyeIcon },
@@ -21,8 +27,35 @@ export function StatsDisplay({
     { label: "役に立った", value: helpfulCount, icon: HeartIcon },
   ];
 
-  if (variant === "cards") {
+  // 一覧カード用（inline）：β版は数値を出さず「集計準備中」を控えめに表示
+  if (variant === "inline") {
+    if (demo) {
+      return (
+        <p className="inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2 py-1 text-[11px] font-medium text-ink-faint">
+          <ClockIcon className="h-3.5 w-3.5" />
+          集計準備中（デモ数値）
+        </p>
+      );
+    }
     return (
+      <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-faint">
+        {items.map(({ label, value, icon: Icon }) => (
+          <div key={label} className="flex items-center gap-1">
+            <Icon className="h-3.5 w-3.5" />
+            <dt className="sr-only">{label}</dt>
+            <dd>
+              <span className="font-semibold text-ink-soft">{formatNumber(value)}</span>
+              <span className="ml-0.5">{label}</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
+
+  // 詳細ページ用（cards）：数値は出すが、β版は弱め＋「デモ数値」注記
+  return (
+    <div>
       <dl className="grid grid-cols-3 gap-3">
         {items.map(({ label, value, icon: Icon }) => (
           <div
@@ -33,30 +66,35 @@ export function StatsDisplay({
               <Icon className="h-3.5 w-3.5" />
               {label}
             </dt>
-            <dd className="mt-1 text-lg font-bold text-brand-800">
+            <dd
+              className={`mt-1 text-lg font-bold ${
+                demo ? "text-ink-faint" : "text-brand-800"
+              }`}
+            >
               {formatNumber(value)}
             </dd>
           </div>
         ))}
       </dl>
-    );
-  }
+      {demo && (
+        <p className="mt-1.5 flex items-center gap-1 text-[11px] text-ink-faint">
+          <ClockIcon className="h-3 w-3" />
+          ※ デモ数値です（実データは集計準備中。正式公開後に実数へ切り替わります）
+        </p>
+      )}
+    </div>
+  );
+}
 
+function ClockIcon({ className = "" }: { className?: string }) {
   return (
-    <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-faint">
-      {items.map(({ label, value, icon: Icon }) => (
-        <div key={label} className="flex items-center gap-1">
-          <Icon className="h-3.5 w-3.5" />
-          <dt className="sr-only">{label}</dt>
-          <dd>
-            <span className="font-semibold text-ink-soft">
-              {formatNumber(value)}
-            </span>
-            <span className="ml-0.5">{label}</span>
-          </dd>
-        </div>
-      ))}
-    </dl>
+    <svg viewBox="0 0 20 20" fill="currentColor" className={className} aria-hidden>
+      <path
+        fillRule="evenodd"
+        d="M10 2a8 8 0 100 16 8 8 0 000-16zm.75 4a.75.75 0 00-1.5 0v4c0 .27.14.52.38.65l2.5 1.5a.75.75 0 10.74-1.3l-2.12-1.27V6z"
+        clipRule="evenodd"
+      />
+    </svg>
   );
 }
 

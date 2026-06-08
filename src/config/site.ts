@@ -33,6 +33,12 @@ export const siteConfig = {
   betaLabel: "β版",
 
   /**
+   * 閲覧数・クリック数・役に立った数を「デモ数値（集計準備中）」として扱うか。
+   * β版では true（実績に見せない）。実データ集計を始めたら false にしてください。
+   */
+  useDemoStats: true,
+
+  /**
    * 検索エンジンにインデックスさせないフラグ（β版/デモ公開用）。
    * true の間は、全ページに noindex メタタグを出力し、robots.txt で
    * クロールを禁止します（Google検索に出にくい状態）。

@@ -6,11 +6,13 @@
 
 export interface SponsorPlan {
   name: string;
-  /** 表示用の料金（円） */
+  /** 表示用の料金（数値文字列。"要相談" 等の非数値も可） */
   price: string;
   unit: string;
   description: string;
   highlight?: boolean;
+  /** 将来提供予定のプラン（「将来プラン」バッジを表示） */
+  upcoming?: boolean;
 }
 
 export const sponsorPlans: SponsorPlan[] = [
@@ -45,6 +47,13 @@ export const sponsorPlans: SponsorPlan[] = [
     unit: "円 / 本",
     description: "サービスの魅力をしっかり伝える記事広告。",
   },
+  {
+    name: "ショート動画紹介付き掲載",
+    price: "要相談",
+    unit: "将来プラン",
+    description: "サービスをショート動画で紹介＋掲載。提供開始時にご案内します。",
+    upcoming: true,
+  },
 ];
 
 /** スポンサー枠の種類（セクション16-2） */
@@ -54,6 +63,7 @@ export const sponsorSlots = [
   "サービス一覧ページスポンサー",
   "サービス詳細ページ下部スポンサー",
   "スポンサー記事",
+  "ショート動画紹介付き掲載（将来プラン）",
   "メルマガ・SNS掲載（予定）",
 ];
 

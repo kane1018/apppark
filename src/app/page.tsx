@@ -3,11 +3,7 @@ import { siteConfig } from "@/config/site";
 import { services } from "@/data/services";
 import { categories } from "@/data/categories";
 import { purposes } from "@/data/purposes";
-import {
-  getFeaturedServices,
-  getNewServices,
-  getPopularServices,
-} from "@/lib/filters";
+import { getFeaturedServices, getNewServices } from "@/lib/filters";
 import { SearchBar } from "@/components/SearchBar";
 import { ServiceGrid } from "@/components/ServiceGrid";
 import { CategoryCard } from "@/components/CategoryCard";
@@ -18,8 +14,12 @@ import { CTASection } from "@/components/CTASection";
 import { CreatorCTA } from "@/components/CreatorCTA";
 
 const featured = getFeaturedServices(services, 6);
-const fresh = getNewServices(services, 6);
-const popular = getPopularServices(services, 3);
+// 新着は「注目」と重複しないよう、注目に含まれないサービスから選ぶ
+const featuredIds = new Set(featured.map((s) => s.id));
+const fresh = getNewServices(
+  services.filter((s) => !featuredIds.has(s.id)),
+  6
+);
 
 const howToSteps = [
   { title: "目的やカテゴリから探す", desc: "やりたいことや分野から、気になるサービスを見つけます。" },
@@ -130,14 +130,27 @@ export default function HomePage() {
           <ServiceGrid services={fresh} />
         </section>
 
-        {/* 6. よく使われているサービス */}
+        {/* 6. よく使われているサービス（β版：実データ集計まで準備中） */}
         <section>
           <SectionHeading
             title="よく使われているサービス"
-            description="閲覧数の多い人気のWebサービス（数値はデモデータです）。"
-            moreHref="/services?sort=views"
+            description="実際の閲覧数・利用状況にもとづくランキングです。"
           />
-          <ServiceGrid services={popular} />
+          <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
+            <p className="inline-flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-ink-faint">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent-400" aria-hidden />
+              集計準備中（β版）
+            </p>
+            <p className="mt-3 text-sm text-ink-soft">
+              よく使われているサービスのランキングは、実際の利用データが集まり次第お見せします。
+            </p>
+            <Link
+              href="/services"
+              className="mt-4 inline-block text-sm font-bold text-brand-600 hover:text-brand-800"
+            >
+              いまはすべてのサービスから探す →
+            </Link>
+          </div>
         </section>
 
         {/* 7. 使い方 */}

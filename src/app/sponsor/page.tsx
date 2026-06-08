@@ -41,6 +41,23 @@ export default function SponsorPage() {
           <h1 className="mt-2 text-2xl font-black text-brand-900 sm:text-3xl">
             スポンサー掲載について
           </h1>
+
+          {/* β版の案内（柔らかく・初期パートナー募集を強調） */}
+          <div className="mt-4 rounded-2xl border border-accent-200 bg-accent-50/60 p-4 sm:p-5">
+            <p className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center rounded-full bg-accent-500 px-2.5 py-0.5 text-[11px] font-black text-white">
+                β版
+              </span>
+              <span className="text-sm font-bold text-brand-900">
+                初期掲載パートナーを募集しています
+              </span>
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+              AppParkは現在β版です。下記の料金は<strong className="font-bold text-ink">仮料金</strong>で、
+              枠・料金・内容は<strong className="font-bold text-ink">要相談</strong>です。立ち上げ期をご一緒いただける
+              初期パートナーには、特別条件やショート動画紹介など柔軟にご相談します。まずはお気軽にお問い合わせください。
+            </p>
+          </div>
         </header>
 
         {/* 1. スポンサー掲載とは */}
@@ -119,13 +136,13 @@ export default function SponsorPage() {
 
         {/* 6. CTA */}
         <section className="rounded-2xl bg-brand-800 p-6 text-white sm:p-8">
-          <h2 className="text-lg font-bold sm:text-xl">スポンサー掲載のご相談</h2>
+          <h2 className="text-lg font-bold sm:text-xl">初期掲載パートナーのご相談</h2>
           <p className="mt-2 text-sm text-white/85">
-            掲載枠・料金・期間など、まずはお気軽にご相談ください。広告資料のご請求も承ります。
+            β版のいま、立ち上げをご一緒いただける初期掲載パートナーを募集しています。掲載枠・料金・期間・ショート動画紹介など、柔軟にご相談ください。広告資料のご請求も承ります。
           </p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
             <Link href="/contact" className="btn-primary">
-              スポンサー掲載について相談する
+              初期掲載パートナーとして相談する
             </Link>
             <Link
               href="/contact"

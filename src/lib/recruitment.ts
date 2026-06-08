@@ -18,12 +18,16 @@ export interface RecruitmentMeta {
   consultation?: boolean;
 }
 
-/** 表示順（投稿フォーム・フィルター・バッジ共通） */
+/**
+ * 表示順（投稿フォーム・フィルター・バッジ共通）。
+ * 優先度：ユーザー → フィードバック → スポンサー → 共同開発者 → 譲渡相談 → 購入相談
+ * （譲渡・購入は相談系のため最後＝カードでは「ほか◯件」に回りやすく、目立ちすぎない）
+ */
 export const recruitmentStatuses: RecruitmentStatus[] = [
   "seeking_users",
   "seeking_feedback",
-  "seeking_cofounder",
   "seeking_sponsor",
+  "seeking_cofounder",
   "transfer_consultation",
   "purchase_consultation",
 ];

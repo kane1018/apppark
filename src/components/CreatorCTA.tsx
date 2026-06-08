@@ -22,10 +22,13 @@ export function CreatorCTA() {
               Webサービスを作った方へ
             </p>
             <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">
-              作ったWebサービスを、見つけてもらいませんか？
+              作れる時代から、届けられる時代へ。
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-white/80">
-              {siteConfig.name}では、個人開発・AIツール・便利なWebサービスの掲載申請を受け付けています。掲載されたサービスは、目的別・カテゴリ別ページから見つけてもらいやすくなり、利用者の感想・改善要望・バグ報告を受け取れるようになります。
+              AIによって、Webサービスや便利ツールは個人でも作れる時代になりました。{siteConfig.name}は、個人や小さなチームが作ったWebサービスを、必要としている人へ届けるための場所です。作って終わりにせず、使ってくれる人へ届けるための発表・発見プラットフォームとしてご活用ください。
+            </p>
+            <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/90">
+              あなたのWebサービス専用の紹介ページを無料でつくれます
             </p>
           </div>
 

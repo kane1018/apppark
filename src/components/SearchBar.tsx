@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 export function SearchBar({
   size = "lg",
   defaultValue = "",
-  placeholder = "やりたいこと・サービス名で検索（例：画像 圧縮、AI 文章）",
+  placeholder = "文章作成、画像圧縮、動画字幕、LP改善などで検索",
 }: {
   size?: "lg" | "md";
   defaultValue?: string;
