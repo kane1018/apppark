@@ -15,6 +15,8 @@ function tool(
     Service,
     | "pricing"
     | "status"
+    | "createdAt"
+    | "updatedAt"
     | "thumbnailUrl"
     | "galleryImageUrls"
     | "imageAlt"
@@ -29,6 +31,13 @@ function tool(
     | "recruitmentNote"
     | "isSponsored"
     | "isFirstParty"
+    | "listingType"
+    | "miniTool"
+    | "iframeEmbed"
+    | "developmentInfo"
+    | "moderationState"
+    | "ctaLabel"
+    | "ctaUrl"
     | "voices"
   > &
     Partial<Service>
@@ -36,6 +45,8 @@ function tool(
   return {
     pricing: "free",
     status: "active",
+    createdAt: "2026-06-09",
+    updatedAt: "2026-06-09",
     thumbnailUrl: null,
     galleryImageUrls: [],
     imageAlt: null,
@@ -50,6 +61,13 @@ function tool(
     recruitmentNote: null,
     isSponsored: false,
     isFirstParty: true,
+    listingType: "internal_mini_tool",
+    miniTool: { enabled: false, type: "none", config: null },
+    iframeEmbed: { requested: false, url: null, approved: false },
+    developmentInfo: { enabled: false, status: null, plannedRelease: null },
+    moderationState: "published",
+    ctaLabel: null,
+    ctaUrl: null,
     voices: [],
     ...partial,
   } as Service;
@@ -239,6 +257,221 @@ export const services: Service[] = [
     reasonCreated: "シンプルなポモドーロタイマーを、広告なしで使いたかったため。",
     recruitmentStatus: ["seeking_users", "seeking_feedback"],
   }),
+
+  /* ===== AppPark内ミニツール（config から描画。コード実行なし） ===== */
+  tool({
+    id: "mini-ai-tool-diagnosis",
+    slug: "ai-tool-diagnosis",
+    name: "自分に合うAIツール診断",
+    shortDescription: "3つの質問に答えると、向いているAIツールのタイプが分かります。",
+    description:
+      "「何から使えばいいか分からない」人向けに、目的・スキル・重視点の3問から、相性の良いAIツールのタイプを提案する診断ミニツールです。AppPark内で完結し、結果は保存しません。",
+    category: "ai-tools",
+    purposes: ["try-ai", "work-efficiency"],
+    tags: ["診断", "AI", "無料"],
+    url: "",
+    listingType: "internal_mini_tool",
+    miniTool: {
+      enabled: true,
+      type: "diagnosis",
+      config: {
+        note: "結果は目安です。実際の選定はご自身でご判断ください。",
+        questions: [
+          {
+            id: "q1",
+            text: "いちばんやりたいことは？",
+            options: [
+              { id: "q1a", label: "文章を作りたい", resultKey: "writing" },
+              { id: "q1b", label: "画像・デザインを作りたい", resultKey: "image" },
+              { id: "q1c", label: "作業を自動化・効率化したい", resultKey: "automation" },
+            ],
+          },
+          {
+            id: "q2",
+            text: "ふだんのPC作業は？",
+            options: [
+              { id: "q2a", label: "文章・メールが多い", resultKey: "writing" },
+              { id: "q2b", label: "資料・画像づくりが多い", resultKey: "image" },
+              { id: "q2c", label: "表計算・繰り返し作業が多い", resultKey: "automation" },
+            ],
+          },
+          {
+            id: "q3",
+            text: "重視するのは？",
+            options: [
+              { id: "q3a", label: "文章の質", resultKey: "writing" },
+              { id: "q3b", label: "見た目・ビジュアル", resultKey: "image" },
+              { id: "q3c", label: "時間の節約", resultKey: "automation" },
+            ],
+          },
+        ],
+        results: [
+          {
+            key: "writing",
+            title: "文章生成AIタイプ",
+            body: "メール・記事・要約などの文章づくりを助けるAIが向いています。まずは無料で使える文章生成AIから試すのがおすすめです。",
+          },
+          {
+            key: "image",
+            title: "画像・デザインAIタイプ",
+            body: "画像生成・デザイン補助のAIが向いています。バナーや素材づくりから試してみましょう。",
+          },
+          {
+            key: "automation",
+            title: "効率化・自動化AIタイプ",
+            body: "表計算の補助や繰り返し作業の自動化に強いAIが向いています。日々の定型作業から導入すると効果的です。",
+          },
+        ],
+      },
+    },
+    recommendedFor: ["AIツールを使い始めたい人", "種類が多くて選べない人"],
+    howToUse: ["3つの質問に答える", "「結果を見る」を押す", "提案されたタイプを参考にする"],
+    useCases: ["AI導入の最初の一歩", "自分に合うツール選び"],
+    cautions: ["結果は目安です。最終判断はご自身で行ってください"],
+    authorComment: "「まず何から？」の入口になればと思って作りました。",
+    techStack: ["AppPark内ミニツール（診断）"],
+    reasonCreated: "AIツールが多すぎて選べない、という声に応えたかったため。",
+    recruitmentStatus: ["seeking_feedback"],
+  }),
+  tool({
+    id: "mini-work-estimate",
+    slug: "work-estimate",
+    name: "作業ざっくり見積もり",
+    shortDescription: "時給と想定時間から、作業のおおよその費用を計算します。",
+    description:
+      "時給（単価）と想定作業時間を入れるだけで、おおよその費用を計算するミニツールです。見積もりの初期検討や、外注・内製の比較の目安に。AppPark内で計算し、入力は保存しません。",
+    category: "calc-diagnosis",
+    purposes: ["calculate", "business-tools"],
+    tags: ["計算", "見積もり", "無料"],
+    url: "",
+    listingType: "internal_mini_tool",
+    miniTool: {
+      enabled: true,
+      type: "calculator",
+      config: {
+        resultLabel: "おおよその費用",
+        unit: "円",
+        rounding: "round",
+        formula: "rate * hours",
+        note: "概算です。実際の見積もりは諸条件をご確認ください。",
+        inputs: [
+          { id: "rate", label: "時給・単価", kind: "number", unit: "円/時", defaultValue: 3000, min: 0 },
+          { id: "hours", label: "想定作業時間", kind: "number", unit: "時間", defaultValue: 10, min: 0 },
+        ],
+      },
+    },
+    recommendedFor: ["作業費用をざっくり知りたい人", "見積もりの初期検討をしたい人"],
+    howToUse: ["時給と想定時間を入力", "おおよその費用が表示される"],
+    useCases: ["外注費用の目安", "作業見積もりの初期検討"],
+    cautions: ["概算です。端数や諸経費は別途ご確認ください"],
+    authorComment: "毎回電卓を叩く手間を減らしたくて作りました。",
+    techStack: ["AppPark内ミニツール（計算・安全な式評価）"],
+    reasonCreated: "費用感をその場でつかめるようにしたかったため。",
+    recruitmentStatus: ["seeking_feedback"],
+  }),
+  tool({
+    id: "mini-reply-template",
+    slug: "reply-template",
+    name: "問い合わせ返信メーカー",
+    shortDescription: "宛名・用件を入れると、丁寧な返信文の下書きを作成します。",
+    description:
+      "宛名・用件・希望日などを入力すると、丁寧な問い合わせ返信文の下書きを生成するテンプレートツールです。AIではなく定型テンプレートで生成し、コピーしてそのまま使えます。",
+    category: "writing",
+    purposes: ["write", "work-efficiency"],
+    tags: ["テンプレート", "メール", "無料"],
+    url: "",
+    listingType: "internal_mini_tool",
+    miniTool: {
+      enabled: true,
+      type: "template_generator",
+      config: {
+        note: "生成文は下書きです。内容を確認してからお使いください。",
+        example: "○○株式会社 ○○様\n\nお問い合わせいただきありがとうございます。…",
+        fields: [
+          { id: "to", label: "宛名", placeholder: "○○株式会社 ○○様" },
+          { id: "topic", label: "用件", placeholder: "お見積もりの件" },
+          { id: "detail", label: "本文", placeholder: "詳細を入力", multiline: true },
+        ],
+        template:
+          "{to}\n\nお世話になっております。\n{topic}について、ご連絡いたします。\n\n{detail}\n\nご不明な点がございましたら、お気軽にお問い合わせください。\nどうぞよろしくお願いいたします。",
+      },
+    },
+    recommendedFor: ["返信文の書き出しに迷う人", "丁寧な文面をすぐ作りたい人"],
+    howToUse: ["宛名・用件・本文を入力", "生成された文章をコピーして使う"],
+    useCases: ["問い合わせ返信", "ビジネスメールの下書き"],
+    cautions: ["生成文は下書きです。内容を確認してから送信してください"],
+    authorComment: "「書き出しで止まる」を減らせればと思い作りました。",
+    techStack: ["AppPark内ミニツール（テンプレート生成）"],
+    reasonCreated: "返信文の下書きづくりを楽にしたかったため。",
+    recruitmentStatus: ["seeking_feedback"],
+  }),
+  tool({
+    id: "mini-prelaunch-checklist",
+    slug: "prelaunch-checklist",
+    name: "サイト公開前チェックリスト",
+    shortDescription: "公開前の確認項目をチェック。進捗率も表示します。",
+    description:
+      "Webサイトを公開する前に確認したい項目（表示・SEO・法務・運用）をチェックできるリストです。進捗率が出るので抜け漏れ防止に。チェック状態はこの端末に保存され、ログインなしで使えます。",
+    category: "website",
+    purposes: ["build-site", "work-efficiency"],
+    tags: ["チェックリスト", "公開前", "無料"],
+    url: "",
+    listingType: "internal_mini_tool",
+    miniTool: {
+      enabled: true,
+      type: "checklist",
+      config: {
+        note: "一般的な確認項目です。サイトの内容に応じて追加でご確認ください。",
+        items: [
+          { id: "c1", label: "スマホ表示が崩れていないか", category: "表示", required: true },
+          { id: "c2", label: "リンク切れがないか", category: "表示" },
+          { id: "c3", label: "title・descriptionを設定したか", category: "SEO" },
+          { id: "c4", label: "OGP画像を設定したか", category: "SEO" },
+          { id: "c5", label: "プライバシーポリシーを掲載したか", category: "法務", required: true },
+          { id: "c6", label: "お問い合わせ手段があるか", category: "運用" },
+          { id: "c7", label: "favicon を設定したか", category: "表示" },
+          { id: "c8", label: "404ページがあるか", category: "運用" },
+        ],
+      },
+    },
+    recommendedFor: ["サイトを公開する人", "抜け漏れを防ぎたい人"],
+    howToUse: ["項目をチェックしていく", "進捗率で確認状況を把握する"],
+    useCases: ["公開前の最終確認", "リニューアル時のチェック"],
+    cautions: ["一般的な項目です。内容に応じて追加確認してください"],
+    authorComment: "公開直前の「あれ確認したっけ？」を減らせればと。",
+    techStack: ["AppPark内ミニツール（チェックリスト）"],
+    reasonCreated: "公開前チェックの抜け漏れを防ぎたかったため。",
+    recruitmentStatus: ["seeking_feedback"],
+  }),
+  tool({
+    id: "mini-text-format",
+    slug: "text-format",
+    name: "改行・箇条書き整形",
+    shortDescription: "余分な空行や空白を整え、箇条書きに整形します。",
+    description:
+      "貼り付けた文章の余分な空行・空白を整理したり、各行を箇条書きにしたり、全角英数を半角に変換したりできる、ルールベースの整形ツールです。AIは使わず、AppPark内で処理します。",
+    category: "writing",
+    purposes: ["write", "work-efficiency"],
+    tags: ["整形", "文章", "無料"],
+    url: "",
+    listingType: "internal_mini_tool",
+    miniTool: {
+      enabled: true,
+      type: "text_transform",
+      config: {
+        note: "ルールベースの整形です（AIは使用していません）。",
+        operations: ["trim_lines", "remove_blank_lines", "collapse_spaces", "to_bullets", "normalize_width"],
+      },
+    },
+    recommendedFor: ["コピペ文章を整えたい人", "箇条書きにしたい人"],
+    howToUse: ["文章を貼り付ける", "適用する整形を選ぶ", "結果をコピーする"],
+    useCases: ["メモの整形", "箇条書き化"],
+    cautions: ["整形結果は確認してからご利用ください"],
+    authorComment: "コピペ後の手直しを減らしたくて作りました。",
+    techStack: ["AppPark内ミニツール（文章整形）"],
+    reasonCreated: "貼り付けた文章の整形を一発で行いたかったため。",
+    recruitmentStatus: ["seeking_feedback"],
+  }),
 ];
 
 /* ------------------------------------------------------------------
@@ -271,4 +504,9 @@ export function getAllTags(): string[] {
 /** 内部の運営作成ツールか（url が /tools/ で始まる） */
 export function isInternalToolUrl(url: string): boolean {
   return url.startsWith("/tools/");
+}
+
+/** ページ内で動くAppPark内ミニツール（config描画）か */
+export function isConfigMiniTool(s: Service): boolean {
+  return s.listingType === "internal_mini_tool" && s.miniTool.enabled && s.miniTool.config !== null;
 }

@@ -5,6 +5,22 @@
  */
 // import type のためビルド時に消去され、ランタイム依存は生じません。
 import type { IconName } from "@/components/icons";
+import type { MiniTool } from "@/lib/minitool/types";
+
+/** 掲載タイプ */
+export type ListingType =
+  | "external" // 外部サービス（URL掲載）
+  | "internal_mini_tool" // AppPark内ミニツール
+  | "iframe_embed" // iframe埋め込み（管理者承認制）
+  | "development"; // 開発中サービス紹介
+
+/** 掲載の審査状態 */
+export type ModerationState =
+  | "draft"
+  | "reviewing"
+  | "published"
+  | "hidden"
+  | "rejected";
 
 /** 料金形態（セクション12） */
 export type Pricing = "free" | "paid" | "freemium" | "unknown";
@@ -131,6 +147,20 @@ export interface Service {
    * 外部の投稿サービスは false。
    */
   isFirstParty: boolean;
+
+  /** 掲載タイプ（外部URL / 内ミニツール / iframe / 開発中） */
+  listingType: ListingType;
+  /** AppPark内ミニツール設定（listingType === "internal_mini_tool" のとき有効） */
+  miniTool: MiniTool;
+  /** iframe埋め込み（管理者承認制） */
+  iframeEmbed: { requested: boolean; url: string | null; approved: boolean };
+  /** 開発中サービス情報 */
+  developmentInfo: { enabled: boolean; status: string | null; plannedRelease: string | null };
+  /** 審査状態（MVPはデータのみ。本格管理画面は将来） */
+  moderationState: ModerationState;
+  /** 任意のCTAボタン（ミニツール等の補足導線） */
+  ctaLabel: string | null;
+  ctaUrl: string | null;
   /** 利用者の声（実際に寄せられたもののみ。無ければ空配列） */
   voices: UsageVoice[];
 }

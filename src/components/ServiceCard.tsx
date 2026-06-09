@@ -3,7 +3,7 @@ import type { Service } from "@/types";
 import { getCategoryName } from "@/data/categories";
 import { getPurposeName } from "@/data/purposes";
 import { formatDate } from "@/lib/labels";
-import { isInternalToolUrl } from "@/data/services";
+import { isInternalToolUrl, isConfigMiniTool } from "@/data/services";
 import { PricingBadge, SponsorTag, StatusBadge } from "@/components/badges";
 import { Thumbnail } from "@/components/Thumbnail";
 import { RecruitmentStatusBadges } from "@/components/recruitment/RecruitmentStatusBadges";
@@ -15,7 +15,9 @@ import { RecruitmentStatusBadges } from "@/components/recruitment/RecruitmentSta
  * - スポンサーは必ずラベルを明示
  */
 export function ServiceCard({ service }: { service: Service }) {
-  const internal = isInternalToolUrl(service.url);
+  const configTool = isConfigMiniTool(service);
+  const internalRoute = !configTool && isInternalToolUrl(service.url);
+  const isDev = service.listingType === "development";
 
   return (
     <article className="card group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-card-hover">
@@ -37,6 +39,16 @@ export function ServiceCard({ service }: { service: Service }) {
         <div className="flex flex-wrap items-center gap-1.5">
           <PricingBadge pricing={service.pricing} />
           <StatusBadge status={service.status} />
+          {configTool && (
+            <span className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-bold text-teal-700 ring-1 ring-inset ring-teal-600/20">
+              ページ内ツール
+            </span>
+          )}
+          {isDev && (
+            <span className="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-bold text-violet-700 ring-1 ring-inset ring-violet-600/20">
+              開発中
+            </span>
+          )}
           <Link
             href={`/categories/${service.category}`}
             className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-ink-soft transition hover:bg-brand-50 hover:text-brand-700"
@@ -86,14 +98,21 @@ export function ServiceCard({ service }: { service: Service }) {
             >
               詳細を見る
             </Link>
-            {internal ? (
+            {configTool ? (
+              <Link
+                href={`/services/${service.slug}`}
+                className="flex-1 rounded-lg bg-accent-500 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-accent-600"
+              >
+                使ってみる
+              </Link>
+            ) : internalRoute ? (
               <Link
                 href={service.url}
                 className="flex-1 rounded-lg bg-accent-500 px-3 py-2 text-center text-xs font-bold text-white transition hover:bg-accent-600"
               >
                 使ってみる
               </Link>
-            ) : (
+            ) : isDev ? null : (
               <a
                 href={service.url}
                 target="_blank"

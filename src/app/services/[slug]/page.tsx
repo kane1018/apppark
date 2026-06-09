@@ -5,6 +5,7 @@ import {
   getAllServices,
   getServiceBySlug,
   isInternalToolUrl,
+  isConfigMiniTool,
 } from "@/data/services";
 import { getSeedCommentsForService } from "@/data/comments";
 import { getCategory, getCategoryName } from "@/data/categories";
@@ -26,6 +27,7 @@ import { FeedbackForm } from "@/components/FeedbackForm";
 import { SimilarServices } from "@/components/SimilarServices";
 import { ServiceGallery } from "@/components/ServiceGallery";
 import { HelpfulButton } from "@/components/HelpfulButton";
+import { MiniTool } from "@/components/minitool/MiniTool";
 import { CommentSection } from "@/components/comments/CommentSection";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { JsonLd } from "@/components/JsonLd";
@@ -62,7 +64,11 @@ export default function ServiceDetailPage({
 
   const similar = getSimilarServices(getAllServices(), service, 3);
   const comments = getSeedCommentsForService(service.id);
-  const internal = isInternalToolUrl(service.url);
+  const configTool = isConfigMiniTool(service);
+  const internalRoute = !configTool && isInternalToolUrl(service.url);
+  const isDev = service.listingType === "development";
+  const isIframe = service.listingType === "iframe_embed";
+  const iframeApproved = isIframe && service.iframeEmbed.approved && !!service.iframeEmbed.url;
 
   const crumbs = [
     { name: "ホーム", path: "/" },
@@ -174,8 +180,17 @@ export default function ServiceDetailPage({
                 </div>
               </dl>
 
-              {/* 2. メインCTA */}
-              {internal ? (
+              {/* 2. メインCTA（掲載タイプ別） */}
+              {configTool ? (
+                <div className="flex flex-col gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:items-center">
+                  <a href="#mini-tool" className="btn-primary w-full sm:w-auto">
+                    このページ内で使う ↓
+                  </a>
+                  <span className="text-[11px] text-ink-faint sm:ml-1">
+                    ※ 外部サイトへ移動せず、このページ上で利用できます
+                  </span>
+                </div>
+              ) : internalRoute ? (
                 <div className="flex flex-col gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:items-center">
                   <Link href={service.url} className="btn-primary w-full sm:w-auto">
                     このツールを使う
@@ -183,6 +198,31 @@ export default function ServiceDetailPage({
                   <span className="text-[11px] text-ink-faint sm:ml-1">
                     ※ AppPark内で動く運営作成ツールです（ブラウザ内で完結）
                   </span>
+                </div>
+              ) : isDev ? (
+                <div className="flex flex-col gap-2 border-t border-gray-100 pt-4">
+                  <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1 text-xs font-bold text-violet-700">
+                    開発中のサービス
+                  </span>
+                  <span className="text-sm text-ink-soft">
+                    {service.url
+                      ? "下記の「サービスを見る」から開けます。"
+                      : "現在準備中です。公開予定や進捗は下記をご覧ください。"}
+                  </span>
+                  {service.url ? (
+                    <ExternalServiceButton url={service.url} serviceName={service.name} variant="primary">
+                      サービスを見る ↗
+                    </ExternalServiceButton>
+                  ) : null}
+                </div>
+              ) : iframeApproved ? (
+                <div className="flex flex-col gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:items-center">
+                  <a href="#embed" className="btn-primary w-full sm:w-auto">
+                    このページ内で使う ↓
+                  </a>
+                  <ExternalServiceButton url={service.url} serviceName={service.name} variant="outline">
+                    公式サイトを開く ↗
+                  </ExternalServiceButton>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2 border-t border-gray-100 pt-4 sm:flex-row sm:items-center">
@@ -210,6 +250,65 @@ export default function ServiceDetailPage({
             {service.description}
           </p>
         </DetailBlock>
+
+        {/* AppPark内ミニツール本体（このページ内で使える） */}
+        {configTool && (
+          <section id="mini-tool" className="scroll-mt-24">
+            <div className="mb-3 rounded-2xl border border-teal-200 bg-teal-50/50 p-4 sm:p-5">
+              <h2 className="text-lg font-bold text-teal-800">このページ内で使えます</h2>
+              <p className="mt-1 text-sm leading-relaxed text-ink-soft">
+                このミニツールは、AppPark内で作成・掲載されたツールです。外部サイトへ移動せず、このページ上で利用できます。
+              </p>
+            </div>
+            <div className="card p-5 sm:p-6">
+              <MiniTool
+                type={service.miniTool.type}
+                config={service.miniTool.config}
+                storageKey={service.id}
+              />
+            </div>
+          </section>
+        )}
+
+        {/* iframe埋め込み（管理者承認済みのみ・sandbox付き） */}
+        {iframeApproved && (
+          <section id="embed" className="scroll-mt-24">
+            <DetailBlock
+              title="サービス画面（埋め込み）"
+              note="外部サイトの埋め込みです。AppParkは埋め込み先の内容・安全性を保証しません。"
+            >
+              <iframe
+                src={service.iframeEmbed.url as string}
+                title={`${service.name} の埋め込み`}
+                sandbox="allow-scripts allow-forms allow-popups"
+                referrerPolicy="no-referrer"
+                loading="lazy"
+                className="aspect-[4/3] w-full rounded-xl border border-gray-200 bg-white"
+              />
+            </DetailBlock>
+          </section>
+        )}
+
+        {/* 開発中サービス情報 */}
+        {isDev && (
+          <DetailBlock title="開発状況">
+            <dl className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl bg-gray-50 px-4 py-3">
+                <dt className="text-xs font-semibold text-ink-faint">開発状況</dt>
+                <dd className="mt-0.5 text-sm text-ink-soft">{service.developmentInfo.status ?? "—"}</dd>
+              </div>
+              <div className="rounded-xl bg-gray-50 px-4 py-3">
+                <dt className="text-xs font-semibold text-ink-faint">公開予定</dt>
+                <dd className="mt-0.5 text-sm text-ink-soft">{service.developmentInfo.plannedRelease ?? "未定"}</dd>
+              </div>
+            </dl>
+            {!service.url && (
+              <p className="mt-3 rounded-xl bg-violet-50 px-4 py-3 text-sm text-violet-800">
+                このサービスは現在準備中です。公開され次第、リンクを追加します。
+              </p>
+            )}
+          </DetailBlock>
+        )}
 
         {/* サービス画面（スクリーンショット）：画像がある場合のみ表示 */}
         {service.galleryImageUrls.length > 0 && (

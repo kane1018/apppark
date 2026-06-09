@@ -9,6 +9,7 @@ import { siteConfig } from "@/config/site";
 import type { Pricing, ServiceStatus } from "@/types";
 import { RecruitmentStatusField } from "@/components/recruitment/RecruitmentStatusField";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { MiniToolBuilder } from "@/components/minitool/MiniToolBuilder";
 
 /**
  * 投稿申請フォーム（セクション14）。
@@ -23,9 +24,19 @@ const IMAGE_URL_PATTERN =
 const IMAGE_URL_TITLE =
   "http(s):// で始まり、.jpg / .jpeg / .png / .webp / .gif で終わる画像URLを入力してください。";
 
+type ListingTypeChoice = "external" | "internal_mini_tool" | "iframe_embed" | "development";
+
+const LISTING_TYPE_OPTIONS: { value: ListingTypeChoice; label: string; desc: string }[] = [
+  { value: "external", label: "外部サービスを掲載する", desc: "すでに公開しているWebサービス・AIツールのURLを掲載" },
+  { value: "internal_mini_tool", label: "AppPark内ミニツールを作成する", desc: "公開URLがなくても、AppPark上で使える小さなツールを作成" },
+  { value: "iframe_embed", label: "iframe埋め込みを希望する", desc: "外部URLをAppPark内に埋め込みたい（運営承認制）" },
+  { value: "development", label: "開発中サービスとして紹介する", desc: "まだ正式公開していないサービスを紹介" },
+];
+
 export function SubmitForm() {
   const { user } = useAuth();
   const [submitted, setSubmitted] = useState(false);
+  const [listingType, setListingType] = useState<ListingTypeChoice>("external");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,6 +91,38 @@ export function SubmitForm() {
         />
       </Fieldset>
 
+      {/* 掲載タイプ */}
+      <Fieldset legend="掲載タイプ">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {LISTING_TYPE_OPTIONS.map((o) => (
+            <label
+              key={o.value}
+              className={`flex cursor-pointer items-start gap-2 rounded-xl border p-3 transition ${
+                listingType === o.value
+                  ? "border-accent-300 bg-accent-50/50 ring-1 ring-accent-200"
+                  : "border-gray-200 bg-white hover:border-brand-300"
+              }`}
+            >
+              <input
+                type="radio"
+                name="listingType"
+                value={o.value}
+                checked={listingType === o.value}
+                onChange={() => setListingType(o.value)}
+                className="mt-0.5 h-4 w-4 border-gray-300 text-accent-500 focus:ring-accent-400"
+              />
+              <span>
+                <span className="block text-sm font-bold text-brand-900">{o.label}</span>
+                <span className="mt-0.5 block text-xs text-ink-faint">{o.desc}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </Fieldset>
+
+      {/* ===== 1. 外部サービスを掲載する ===== */}
+      {listingType === "external" && (
+      <>
       <Fieldset legend="サービス基本情報">
         <Field label="サービス名" name="serviceName" required />
         <Field label="サービスURL" name="url" type="url" required placeholder="https://..." />
@@ -188,10 +231,109 @@ export function SubmitForm() {
         <TextareaField label="作った理由" name="reasonCreated" rows={2} />
         <Field label="作者SNS（URL・任意）" name="authorSns" type="url" />
       </Fieldset>
+      </>
+      )}
 
-      <Fieldset legend="募集・相談ステータス（任意）">
-        <RecruitmentStatusField />
+      {/* ===== 2. AppPark内ミニツールを作成する ===== */}
+      {listingType === "internal_mini_tool" && (
+      <>
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-xs leading-relaxed text-amber-900/90">
+        AppPark内ミニツールは、安全性確保のため、テンプレート形式で作成する仕組みです。投稿者が自由にHTMLやJavaScriptを実行できる形式ではありません。個人情報、パスワード、決済情報、機密情報を入力させるツールは掲載できません。掲載内容は運営確認後に公開されます。
+      </div>
+
+      <Fieldset legend="ミニツール基本情報">
+        <Field label="ツール名" name="serviceName" required />
+        <Field label="一言説明" name="shortDescription" required placeholder="何ができるツールかを一言で" />
+        <TextareaField label="詳細説明" name="description" required rows={4} />
       </Fieldset>
+
+      <Fieldset legend="分類">
+        <div>
+          <label className="field-label" htmlFor="mt-category">カテゴリ</label>
+          <select id="mt-category" name="category" required className="field-input">
+            <option value="">選択してください</option>
+            {categories.map((c) => (
+              <option key={c.slug} value={c.slug}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <span className="field-label">目的タグ（複数選択可）</span>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {purposes.map((p) => (
+              <CheckOption key={p.slug} name="purposes" value={p.slug} label={p.name} />
+            ))}
+          </div>
+        </div>
+        <Field label="サムネイル画像URL（任意）" name="thumbnailUrl" type="url" pattern={IMAGE_URL_PATTERN} title={IMAGE_URL_TITLE} />
+      </Fieldset>
+
+      <Fieldset legend="ミニツールを作成する">
+        <MiniToolBuilder />
+      </Fieldset>
+
+      <Fieldset legend="表示の補足（任意）">
+        <TextareaField label="注意文（任意）" name="toolNote" rows={2} placeholder="利用時の注意があれば" />
+        <Field label="CTAボタン文言（任意）" name="ctaLabel" placeholder="例：詳しくはこちら" />
+        <Field label="CTAリンク（任意）" name="ctaUrl" type="url" placeholder="https://..." />
+      </Fieldset>
+      </>
+      )}
+
+      {/* ===== 3. iframe埋め込みを希望する ===== */}
+      {listingType === "iframe_embed" && (
+      <>
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-xs leading-relaxed text-amber-900/90">
+        iframe埋め込みは、運営の確認・承認後にのみ表示されます（自動では表示しません）。表示する場合も sandbox 属性を付与し、安全性を確保します。
+      </div>
+      <Fieldset legend="iframe埋め込み申請">
+        <Field label="ツール名・サービス名" name="serviceName" required />
+        <Field label="埋め込み希望URL" name="iframeUrl" type="url" required placeholder="https://..." />
+        <Field label="通常のサービスURL" name="url" type="url" required placeholder="https://..." />
+        <TextareaField label="埋め込み希望理由" name="iframeReason" required rows={3} />
+        <TextareaField label="サービス説明" name="description" required rows={3} />
+        <div>
+          <label className="field-label" htmlFor="if-category">カテゴリ</label>
+          <select id="if-category" name="category" required className="field-input">
+            <option value="">選択してください</option>
+            {categories.map((c) => (<option key={c.slug} value={c.slug}>{c.name}</option>))}
+          </select>
+        </div>
+        <CheckOption name="agreeIframeNote" value="yes" required label="埋め込み表示は運営承認制であり、承認まで表示されないことに同意します。" />
+      </Fieldset>
+      </>
+      )}
+
+      {/* ===== 4. 開発中サービスとして紹介する ===== */}
+      {listingType === "development" && (
+      <>
+      <div className="rounded-2xl border border-violet-200 bg-violet-50/70 p-4 text-xs leading-relaxed text-violet-900/90">
+        アイデアのみで実態が確認できないものは掲載できません。開発状況やスクリーンショット等で、実態が分かるようにしてください。
+      </div>
+      <Fieldset legend="開発中サービス情報">
+        <Field label="サービス名" name="serviceName" required />
+        <Field label="一言説明" name="shortDescription" required />
+        <TextareaField label="詳細説明" name="description" required rows={4} />
+        <Field label="開発状況" name="devStatus" required placeholder="例：β版テスト中／コア機能実装済み" />
+        <Field label="公開予定時期（任意）" name="plannedRelease" placeholder="例：2026年内" />
+        <div>
+          <label className="field-label" htmlFor="dev-category">カテゴリ</label>
+          <select id="dev-category" name="category" required className="field-input">
+            <option value="">選択してください</option>
+            {categories.map((c) => (<option key={c.slug} value={c.slug}>{c.name}</option>))}
+          </select>
+        </div>
+        <Field label="スクリーンショット画像URL（任意）" name="thumbnailUrl" type="url" pattern={IMAGE_URL_PATTERN} title={IMAGE_URL_TITLE} />
+      </Fieldset>
+      </>
+      )}
+
+      {/* 募集・相談ステータス（iframe以外） */}
+      {listingType !== "iframe_embed" && (
+        <Fieldset legend="募集・相談ステータス（任意）">
+          <RecruitmentStatusField />
+        </Fieldset>
+      )}
 
       <Fieldset legend="同意事項">
         <CheckOption

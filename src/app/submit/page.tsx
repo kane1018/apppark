@@ -4,6 +4,7 @@ import { siteConfig } from "@/config/site";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SubmitForm } from "@/components/SubmitForm";
 import { CreatorBenefits } from "@/components/CreatorBenefits";
+import { MiniToolPromo } from "@/components/MiniToolPromo";
 import { JsonLd } from "@/components/JsonLd";
 import { AuthGate } from "@/components/auth/AuthGate";
 
@@ -48,6 +49,11 @@ export default function SubmitPage() {
           <h2 className="mb-3 text-sm font-bold text-brand-800">掲載するメリット</h2>
           <CreatorBenefits />
         </section>
+
+        {/* 公開URLがなくてもミニツールを公開できる */}
+        <div className="mb-6">
+          <MiniToolPromo />
+        </div>
 
         {/* 注意文（審査制） */}
         <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm leading-relaxed text-amber-900/90">

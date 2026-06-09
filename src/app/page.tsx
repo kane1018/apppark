@@ -12,6 +12,7 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { CTASection } from "@/components/CTASection";
 import { CreatorCTA } from "@/components/CreatorCTA";
+import { MiniToolPromo } from "@/components/MiniToolPromo";
 
 const featured = getFeaturedServices(services, 6);
 // 新着は「注目」と重複しないよう、注目に含まれないサービスから選ぶ
@@ -153,6 +154,9 @@ export default function HomePage() {
 
         {/* 8. Webサービスを作った方へ（掲載者向けの横長CTA。閲覧者導線の邪魔をしない位置） */}
         <CreatorCTA />
+
+        {/* 8.5 コードを書けなくてもミニツールを公開できる（投稿者向け） */}
+        <MiniToolPromo showCta />
 
         {/* 9. スポンサー掲載について（最下部） */}
         <CTASection

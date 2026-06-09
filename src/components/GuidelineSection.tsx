@@ -36,6 +36,22 @@ const rejectable = [
   "運営が不適切と判断したサービス",
 ];
 
+const miniToolOk = [
+  "診断", "計算", "チェックリスト", "テンプレート生成", "文章整形",
+  "業務効率化", "学習支援", "生活便利", "クリエイター支援",
+];
+
+const miniToolNg = [
+  "個人情報を不必要に取得するもの",
+  "パスワードや決済情報を入力させるもの",
+  "違法行為を助長するもの",
+  "医療・法律・金融判断を断定するもの",
+  "著作権侵害を助長するもの",
+  "外部スクリプトを実行するもの",
+  "悪意あるコードを含むもの",
+  "自由HTMLや自由JavaScriptの実行を前提とするもの",
+];
+
 export function GuidelineSection() {
   return (
     <div className="space-y-8">
@@ -71,6 +87,45 @@ export function GuidelineSection() {
             ))}
           </ul>
         </div>
+      </div>
+
+      {/* AppPark内ミニツールの掲載基準 */}
+      <div>
+        <h2 className="text-lg font-bold text-brand-800">AppPark内ミニツールの掲載基準</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          AppPark上で作成・公開できるミニツール（診断・計算・チェックリスト・テンプレート生成・文章整形など）の基準です。
+        </p>
+        <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5">
+            <h3 className="flex items-center gap-2 text-base font-bold text-emerald-800">
+              <span aria-hidden>✓</span> 掲載しやすいもの
+            </h3>
+            <ul className="mt-3 space-y-1.5">
+              {miniToolOk.map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-emerald-900/90">
+                  <span className="mt-0.5 text-emerald-500" aria-hidden>・</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-2xl border border-rose-200 bg-rose-50/50 p-5">
+            <h3 className="flex items-center gap-2 text-base font-bold text-rose-800">
+              <span aria-hidden>✕</span> 掲載不可
+            </h3>
+            <ul className="mt-3 space-y-1.5">
+              {miniToolNg.map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-rose-900/90">
+                  <span className="mt-0.5 text-rose-400" aria-hidden>・</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <p className="mt-3 rounded-xl bg-gray-50 px-4 py-3 text-xs leading-relaxed text-ink-faint">
+          AppPark内ミニツールは、安全性確保のためテンプレート形式で作成します。投稿者が自由にHTMLやJavaScriptを実行できる形式ではありません。個人情報・パスワード・決済情報・機密情報を入力させるツールは掲載できません。掲載は運営確認後に公開されます。
+        </p>
       </div>
 
       {/* 必須文言（セクション15） */}
