@@ -3,7 +3,9 @@ import { siteConfig } from "@/config/site";
 import { services, getCategoryCounts } from "@/data/services";
 import { categories, majorCategories } from "@/data/categories";
 import { featuredPurposes } from "@/data/purposes";
+import { seedIdeas } from "@/data/ideas";
 import { getFeaturedServices, getNewServices } from "@/lib/filters";
+import { IdeaCard } from "@/components/ideas/IdeaCard";
 import { SearchBar } from "@/components/SearchBar";
 import { ServiceGrid } from "@/components/ServiceGrid";
 import { CategoryCard } from "@/components/CategoryCard";
@@ -23,6 +25,11 @@ const fresh = getNewServices(
 );
 
 const categoryCounts = getCategoryCounts();
+
+// アイデア掲示板の新着（控えめにトップへ。3件のみ）
+const newestIdeas = [...seedIdeas]
+  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  .slice(0, 3);
 
 const howToSteps = [
   { title: "目的やカテゴリから探す", desc: "やりたいことや分野から、気になるサービスを見つけます。" },
@@ -149,6 +156,38 @@ export default function HomePage() {
             <ServiceGrid services={fresh} />
           </section>
         )}
+
+        {/* 6.5 アイデア掲示板（サブ機能として控えめに） */}
+        <section className="rounded-2xl border border-accent-100 bg-accent-50/30 p-6 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-black text-brand-900 sm:text-2xl">
+                こんなのあったらいいな、を書き込もう。
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
+                「こういうWebツールが欲しい」「この作業をもっと楽にしたい」など、利用者のアイデアを投稿できます。投稿されたアイデアは、個人開発者や投稿者が新しいツールを作るヒントになります。
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {newestIdeas.map((i) => (
+              <IdeaCard key={i.id} idea={i} />
+            ))}
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <Link href="/ideas" className="btn-primary">
+              アイデアを見る
+            </Link>
+            <Link
+              href="/ideas"
+              className="inline-flex items-center justify-center rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-bold text-brand-700 transition hover:border-brand-400 hover:bg-brand-50"
+            >
+              アイデアを投稿する
+            </Link>
+          </div>
+        </section>
 
         {/* 7. 使い方 */}
         <section className="rounded-2xl bg-brand-50/70 p-6 sm:p-8">

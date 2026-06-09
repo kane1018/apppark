@@ -38,7 +38,7 @@ const LISTING_TYPE_OPTIONS: { value: ListingTypeChoice; label: string; desc: str
   { value: "development", label: "開発中サービスとして紹介する", desc: "まだ正式公開していないサービスを紹介" },
 ];
 
-export function SubmitForm() {
+export function SubmitForm({ ideaId = null }: { ideaId?: string | null }) {
   const { user } = useAuth();
   const [submitted, setSubmitted] = useState(false);
   const [listingType, setListingType] = useState<ListingTypeChoice>("external");
@@ -74,6 +74,20 @@ export function SubmitForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
+      {/* アイデア掲示板から作成する場合 */}
+      {ideaId && (
+        <div className="rounded-2xl border border-accent-200 bg-accent-50/40 p-4 text-sm leading-relaxed text-brand-900">
+          <input type="hidden" name="relatedIdeaId" value={ideaId} />
+          <span className="font-bold">アイデア掲示板の投稿をもとに作成中です。</span>
+          <Link href={`/ideas/${ideaId}`} className="ml-2 text-xs font-semibold text-brand-600 underline-offset-2 hover:underline">
+            元のアイデアを見る
+          </Link>
+          <p className="mt-1 text-xs text-ink-faint">
+            掲載されると、このアイデアと相互にリンクされます（relatedIdeaId として申請に含まれます）。
+          </p>
+        </div>
+      )}
+
       <Fieldset legend="申請者情報（ログイン中）">
         {/* 公開表示名・メールはログイン情報から。サービスにはこの公開表示名が紐づきます */}
         <input type="hidden" name="authorId" value={user?.id ?? ""} />

@@ -11,6 +11,7 @@ import { getSeedCommentsForService } from "@/data/comments";
 import { getCategory, getCategoryName } from "@/data/categories";
 import { getPurposeName } from "@/data/purposes";
 import { getTagDef } from "@/data/tags";
+import { getSeedIdeaById } from "@/data/ideas";
 import { getSimilarServices } from "@/lib/filters";
 import { formatDate } from "@/lib/labels";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
@@ -288,6 +289,24 @@ export default function ServiceDetailPage({
             </div>
           </div>
         </section>
+
+        {/* アイデア掲示板から作られたサービス */}
+        {service.relatedIdeaId && (
+          <section className="rounded-2xl border border-accent-200 bg-accent-50/40 p-4 sm:p-5">
+            <p className="text-sm leading-relaxed text-ink-soft">
+              このサービスは、
+              <Link href={`/ideas/${service.relatedIdeaId}`} className="font-bold text-brand-700 underline-offset-2 hover:underline">
+                アイデア掲示板の投稿
+              </Link>
+              をもとに作成されました。
+              {getSeedIdeaById(service.relatedIdeaId) && (
+                <span className="mt-1 block text-xs text-ink-faint">
+                  元のアイデア：「{getSeedIdeaById(service.relatedIdeaId)!.title}」
+                </span>
+              )}
+            </p>
+          </section>
+        )}
 
         {/* 3. 何ができるサービスか */}
         <DetailBlock title="何ができるサービスか">

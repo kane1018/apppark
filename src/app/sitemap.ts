@@ -4,6 +4,7 @@ import { getAllServices } from "@/data/services";
 import { categories } from "@/data/categories";
 import { purposes } from "@/data/purposes";
 import { allTagDefs } from "@/data/tags";
+import { seedIdeas } from "@/data/ideas";
 
 /**
  * sitemap.xml を生成（セクション22）。
@@ -18,6 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/services",
     "/categories",
     "/purposes",
+    "/ideas",
     "/submit",
     "/sponsor",
     "/guidelines",
@@ -64,11 +66,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
+  const ideaEntries: MetadataRoute.Sitemap = seedIdeas.map((i) => ({
+    url: `${base}/ideas/${i.id}`,
+    lastModified: new Date(i.updatedAt),
+    changeFrequency: "weekly",
+    priority: 0.5,
+  }));
+
   return [
     ...staticEntries,
     ...serviceEntries,
     ...categoryEntries,
     ...purposeEntries,
     ...tagEntries,
+    ...ideaEntries,
   ];
 }

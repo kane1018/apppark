@@ -7,6 +7,8 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { services } from "@/data/services";
 import { siteConfig } from "@/config/site";
 import { OwnerServiceList } from "@/components/auth/OwnerServiceList";
+import { IdeaProvider } from "@/components/ideas/IdeaProvider";
+import { MyIdeasSection } from "@/components/ideas/MyIdeasSection";
 
 /** マイページ（公開表示名の編集・自分の投稿・ログアウト） */
 export function MyPageScreen() {
@@ -40,6 +42,7 @@ export function MyPageScreen() {
       (isOwner && s.authorId === siteConfig.owner.authorId)
   );
   const isAdmin = user.role === "admin";
+  const ideaBornServices = myServices.filter((s) => s.relatedIdeaId !== null);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -113,6 +116,27 @@ export function MyPageScreen() {
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
             ※ 各サービスは投稿者本人として、編集申請・非公開申請・削除申請ができます。申請は運営が確認のうえ反映します（送信先の接続後に有効になります）。{isAdmin && "管理者は非公開・削除を直接行えます。"}
           </p>
+        </section>
+
+        {/* アイデアから作成中のサービス */}
+        {ideaBornServices.length > 0 && (
+          <section>
+            <h2 className="mb-3 text-base font-bold text-brand-800">アイデアから作成したサービス</h2>
+            <OwnerServiceList services={ideaBornServices} isAdmin={isAdmin} />
+          </section>
+        )}
+
+        {/* アイデア掲示板の連携 */}
+        <section>
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h2 className="text-base font-bold text-brand-800">アイデア掲示板</h2>
+            <Link href="/ideas" className="text-xs font-semibold text-brand-600 underline-offset-2 hover:underline">
+              アイデア掲示板へ →
+            </Link>
+          </div>
+          <IdeaProvider>
+            <MyIdeasSection />
+          </IdeaProvider>
         </section>
       </div>
     </div>

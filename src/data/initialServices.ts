@@ -627,6 +627,7 @@ export const initialServices: Service[] = [
     id: "init-interview-reply",
     slug: "interview-schedule-reply",
     name: "面接日程返信メーカー",
+    relatedIdeaId: "idea-interview-reply",
     shortDescription:
       "企業名・担当者・希望日時・面接形式から、丁寧な面接日程の返信文を作ります。",
     description:

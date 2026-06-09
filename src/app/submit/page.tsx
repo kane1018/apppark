@@ -15,7 +15,13 @@ export const metadata: Metadata = buildMetadata({
   path: "/submit",
 });
 
-export default function SubmitPage() {
+export default function SubmitPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const ideaId =
+    typeof searchParams.ideaId === "string" ? searchParams.ideaId : null;
   const crumbs = [
     { name: "ホーム", path: "/" },
     { name: "サービス掲載申請", path: "/submit" },
@@ -72,7 +78,7 @@ export default function SubmitPage() {
           body="AppParkでは、掲載内容の確認や投稿者への連絡のため、サービス投稿にはログインをお願いしています。ログイン後、Webサービス・便利ツールの掲載申請ができます。"
         >
           <h2 className="mb-3 text-lg font-bold text-brand-900">掲載申請フォーム</h2>
-          <SubmitForm />
+          <SubmitForm ideaId={ideaId} />
         </AuthGate>
       </div>
     </div>

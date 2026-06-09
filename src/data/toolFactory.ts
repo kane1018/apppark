@@ -114,6 +114,7 @@ export function tool(
     | "moderationState"
     | "ctaLabel"
     | "ctaUrl"
+    | "relatedIdeaId"
     | "voices"
     | "subCategories"
     | "audienceTags"
@@ -152,6 +153,7 @@ export function tool(
     moderationState: "published",
     ctaLabel: null,
     ctaUrl: null,
+    relatedIdeaId: null,
     voices: [],
     subCategories: [],
     audienceTags: [],

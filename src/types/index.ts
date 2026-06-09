@@ -204,8 +204,81 @@ export interface Service {
   /** 任意のCTAボタン（ミニツール等の補足導線） */
   ctaLabel: string | null;
   ctaUrl: string | null;
+  /** このサービスの元になったアイデア投稿の id（アイデア掲示板から作られた場合） */
+  relatedIdeaId: string | null;
   /** 利用者の声（実際に寄せられたもののみ。無ければ空配列） */
   voices: UsageVoice[];
+}
+
+/* ============================================================
+ * アイデア掲示板（「こんなのあったらいいな掲示板」）
+ * ============================================================ */
+
+/** アイデアのステータス */
+export type IdeaStatus =
+  | "open" // 募集中
+  | "planned" // 作成予定
+  | "in_progress" // 作成中
+  | "created" // 作成済み
+  | "closed"; // 終了
+
+/** AppPark内ミニツールで作れそうか */
+export type MiniToolPotential = "yes" | "maybe" | "no" | "unknown";
+
+/** 作ってほしい度（1〜5） */
+export type WantLevel = 1 | 2 | 3 | 4 | 5;
+
+/**
+ * アイデア投稿（利用者が「こんなWebツールが欲しい」を書き込む）。
+ * このデータ構造のまま Supabase / Firebase 等のテーブルに対応づけられます。
+ */
+export interface Idea {
+  id: string;
+  title: string;
+  /** 困っていること・解決したいこと */
+  problem: string;
+  /** こんなツールが欲しい */
+  desiredTool: string;
+  /** カテゴリ slug（既存カテゴリと共通） */
+  category: string;
+  /** 目的タグ slug 配列（既存 purposes と共通） */
+  purposeTags: string[];
+  /** 利用者別タグ slug 配列（既存 tags と共通） */
+  audienceTags: string[];
+  /** 使いたい場面（任意） */
+  useCase: string | null;
+  similarServiceUrl: string | null;
+  referenceImageUrl: string | null;
+  miniToolPotential: MiniToolPotential;
+  wantLevel: WantLevel;
+  status: IdeaStatus;
+  /** このアイデアから作られたサービスの id（あれば） */
+  relatedServiceId: string | null;
+  /** 投稿者ユーザーID */
+  authorId: string;
+  /** 公開表示名 */
+  publicAuthorName: string;
+  /** 匿名表示にするか（true のとき公開ページでは「匿名」と表示） */
+  isAnonymous: boolean;
+  createdAt: string;
+  updatedAt: string;
+  likeCount: number;
+  commentCount: number;
+  moderationStatus: ModerationStatus;
+  riskLevel: RiskLevel;
+}
+
+/** アイデアへのコメント */
+export interface IdeaComment {
+  id: string;
+  ideaId: string;
+  userId: string | null;
+  authorName: string;
+  body: string;
+  riskLevel: RiskLevel;
+  moderationStatus: ModerationStatus;
+  reportedCount: number;
+  createdAt: string;
 }
 
 /* ============================================================

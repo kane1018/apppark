@@ -9,6 +9,8 @@ import {
 } from "@/data/categories";
 import { getServicesByCategory } from "@/data/services";
 import { getPurposeName } from "@/data/purposes";
+import { getSeedIdeasByCategory } from "@/data/ideas";
+import { IdeaCard } from "@/components/ideas/IdeaCard";
 import {
   buildMetadata,
   breadcrumbJsonLd,
@@ -48,6 +50,7 @@ export default function CategoryDetailPage({
   if (!category) notFound();
 
   const items = getServicesByCategory(category.slug);
+  const categoryIdeas = getSeedIdeasByCategory(category.slug);
   const crumbs = [
     { name: "ホーム", path: "/" },
     { name: "カテゴリ一覧", path: "/categories" },
@@ -132,6 +135,26 @@ export default function CategoryDetailPage({
         services={items}
         emptyMessage="このカテゴリにはまだサービスがありません。"
       />
+
+      {/* このカテゴリのアイデア */}
+      {categoryIdeas.length > 0 && (
+        <section className="mt-12">
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h2 className="section-title">このカテゴリのアイデア</h2>
+            <Link href="/ideas" className="text-xs font-semibold text-brand-600 underline-offset-2 hover:underline">
+              アイデア掲示板を見る →
+            </Link>
+          </div>
+          <p className="mb-4 text-sm text-ink-soft">
+            利用者が「{category.name}」分野で欲しいと投稿したツールのアイデアです。
+          </p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {categoryIdeas.map((i) => (
+              <IdeaCard key={i.id} idea={i} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

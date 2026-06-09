@@ -134,8 +134,8 @@ export const siteConfig = {
 export const mainNav = [
   { label: "サービスを探す", href: "/services" },
   { label: "カテゴリ", href: "/categories" },
-  { label: "目的から探す", href: "/purposes" },
-  { label: `${siteConfig.name}について`, href: "/about" },
+  { label: "AppPark内ミニツール", href: "/services?internal=1" },
+  { label: "アイデア掲示板", href: "/ideas" },
 ] as const;
 
 /** ヘッダー内の補助導線（投稿者・スポンサー向け。目立たせすぎない） */
@@ -163,6 +163,7 @@ export const footerNav = {
       { label: "サービス一覧", href: "/services" },
       { label: "カテゴリ一覧", href: "/categories" },
       { label: "目的から探す", href: "/purposes" },
+      { label: "アイデア掲示板", href: "/ideas" },
     ],
   },
   creator: {
