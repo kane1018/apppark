@@ -241,7 +241,7 @@ export default function ServiceDetailPage({
                     このツールを使う
                   </Link>
                   <span className="text-[11px] text-ink-faint sm:ml-1">
-                    ※ AppPark内で動く運営作成ツールです（ブラウザ内で完結）
+                    ※ AppPark内で動くツールです（ブラウザ内で完結）
                   </span>
                 </div>
               ) : isDev ? (

@@ -49,7 +49,7 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
         <header className="mb-6">
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-700">
-              運営作成
+              AppPark内ミニツール
             </span>
             <Link
               href={`/categories/${service.category}`}

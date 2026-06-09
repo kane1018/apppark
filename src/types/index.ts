@@ -184,10 +184,12 @@ export interface Service {
   /** 「スポンサー」「PR」「広告」のいずれか */
   sponsorLabel?: "スポンサー" | "PR" | "広告";
   /**
-   * AppPark運営が作成・提供するツールか（true なら「運営作成」表示、url は内部 /tools/...）。
-   * 外部の投稿サービスは false。
+   * 公式（運営作成）として特別扱いするか。通常投稿は false。
+   * 初期掲載サービスも、実際の投稿者（公開表示名）に紐づく通常投稿として扱うため false です。
    */
   isFirstParty: boolean;
+  /** 作成区分。"user"＝通常のユーザー投稿、"official"＝運営公式（特別表示）。 */
+  createdBy: "user" | "official";
 
   /** 掲載タイプ（外部URL / 内ミニツール / iframe / 開発中） */
   listingType: ListingType;

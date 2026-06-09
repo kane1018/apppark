@@ -1,14 +1,17 @@
 import type { MiniToolType } from "@/lib/minitool/types";
 import type { Service } from "@/types";
+import { siteConfig } from "@/config/site";
 
 /**
  * Service データを組み立てる共通ファクトリ。
  *
- * services.ts（運営作成の実動ツール）と initialServices.ts（各カテゴリの初期掲載
+ * services.ts（AppPark内で動く実動ツール）と initialServices.ts（各カテゴリの初期掲載
  * ミニツール）の双方から使うため、循環参照を避けて独立モジュールに切り出しています。
  *
- * 未指定のタグ・フラグは、他のフィールドから自動導出します
- * （指定があればその値を尊重）。投稿者のコードは実行しません。
+ * 初期掲載サービスは「運営作成」ではなく、サイトオーナー本人の通常投稿
+ * （公開表示名：siteConfig.owner.displayName）として扱います（createdBy: "user"）。
+ * 未指定のタグ・フラグは他のフィールドから自動導出します（指定があれば尊重）。
+ * 投稿者のコードは実行しません。
  */
 
 /** ミニツールの種類 → ツール形式タグ slug */
@@ -103,6 +106,7 @@ export function tool(
     | "recruitmentNote"
     | "isSponsored"
     | "isFirstParty"
+    | "createdBy"
     | "listingType"
     | "miniTool"
     | "iframeEmbed"
@@ -132,14 +136,15 @@ export function tool(
     views: 0,
     clicks: 0,
     helpfulCount: 0,
-    authorId: "apppark-official",
-    publicAuthorName: "AppPark運営",
-    authorName: "AppPark運営",
+    authorId: siteConfig.owner.authorId,
+    publicAuthorName: siteConfig.owner.displayName,
+    authorName: siteConfig.owner.displayName,
     authorLinks: [],
     aiToolsUsed: [],
     recruitmentNote: null,
     isSponsored: false,
-    isFirstParty: true,
+    isFirstParty: false,
+    createdBy: "user",
     listingType: "internal_mini_tool",
     miniTool: { enabled: false, type: "none", config: null },
     iframeEmbed: { requested: false, url: null, approved: false },

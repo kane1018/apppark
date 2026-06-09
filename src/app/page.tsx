@@ -129,7 +129,7 @@ export default function HomePage() {
         <section>
           <SectionHeading
             title="今すぐ使えるツール"
-            description="運営が作成した、ブラウザですぐ使える無料ツール。"
+            description="ブラウザですぐ使える、無料のAppPark内ミニツール。"
             moreHref="/services"
           />
           <div className="mb-4">

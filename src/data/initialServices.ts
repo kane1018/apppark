@@ -4,30 +4,27 @@ import { tool } from "@/data/toolFactory";
 /**
  * 各大カテゴリの初期掲載サービス。
  *
- * すべて AppPark運営（編集部）が作成・提供する、AppPark内で実際に使えるミニツールです
- * （config からの描画のみ。投稿者の自由コードは実行しません）。
- * デモ・サンプル・テストではなく、そのまま使える初期掲載ツールとして掲載します。
+ * AppPark内で実際に使えるミニツールです（config からの描画のみ。投稿者の自由コードは
+ * 実行しません）。デモ・サンプル・テストではなく、そのまま使える掲載ツールです。
+ *
+ * 投稿者は「運営作成」ではなく、サイトオーナー本人の通常投稿として扱います
+ * （公開表示名：siteConfig.owner.displayName ＝「Kansui」、createdBy: "user"、
+ * isFirstParty: false。これらは toolFactory.ts のデフォルトで設定されます）。
+ * 公開するのは公開表示名のみで、メール・連絡先・管理情報は公開しません。
  * 架空のレビュー・閲覧数・クリック数は持たせません（views/clicks/helpful は 0 のまま、
  * siteConfig.showUsageStats=false のため表示もされません）。
- *
- * 投稿者表示名は「AppPark編集部」（自然なニックネーム・運営作成）に統一しています。
  *
  * 注: サイト制作・開発カテゴリは、既存の「サイト公開前チェックリスト」
  * （services.ts の prelaunch-checklist）で初期掲載済みのため、ここでは作成しません。
  */
 
-const EDITOR = "AppPark編集部";
-
 /** initialTool の入力（recruitmentStatus はデフォルトを持つため任意にする） */
 type InitialToolInput = Omit<Parameters<typeof tool>[0], "recruitmentStatus"> &
   Partial<Pick<Service, "recruitmentStatus">>;
 
-/** 編集部が作成した初期掲載ミニツールの共通デフォルト */
+/** 初期掲載ミニツールの共通デフォルト（投稿者・料金・募集の既定値） */
 function initialTool(partial: InitialToolInput): Service {
   return tool({
-    publicAuthorName: EDITOR,
-    authorName: EDITOR,
-    isFirstParty: true,
     pricingTags: ["free", "no-signup"],
     recruitmentStatus: ["seeking_feedback"],
     ...partial,

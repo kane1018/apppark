@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { services } from "@/data/services";
-import { ServiceGrid } from "@/components/ServiceGrid";
+import { siteConfig } from "@/config/site";
+import { OwnerServiceList } from "@/components/auth/OwnerServiceList";
 
 /** マイページ（公開表示名の編集・自分の投稿・ログアウト） */
 export function MyPageScreen() {
@@ -31,7 +32,14 @@ export function MyPageScreen() {
     return <div className="container-content py-16 text-center text-sm text-ink-faint">読み込み中…</div>;
   }
 
-  const myServices = services.filter((s) => s.authorId === user.id);
+  // 自分の投稿：ユーザーIDが一致するもの＋サイトオーナー本人（公開表示名が一致）の初期掲載
+  const isOwner = user.displayName === siteConfig.owner.displayName;
+  const myServices = services.filter(
+    (s) =>
+      s.authorId === user.id ||
+      (isOwner && s.authorId === siteConfig.owner.authorId)
+  );
+  const isAdmin = user.role === "admin";
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -86,9 +94,14 @@ export function MyPageScreen() {
 
         {/* 自分の投稿サービス */}
         <section>
-          <h2 className="mb-3 text-base font-bold text-brand-800">自分が投稿したサービス</h2>
+          <div className="mb-3 flex items-baseline justify-between gap-3">
+            <h2 className="text-base font-bold text-brand-800">自分が投稿したサービス</h2>
+            {myServices.length > 0 && (
+              <span className="text-xs font-semibold text-ink-faint">{myServices.length}件</span>
+            )}
+          </div>
           {myServices.length > 0 ? (
-            <ServiceGrid services={myServices} />
+            <OwnerServiceList services={myServices} isAdmin={isAdmin} />
           ) : (
             <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-5 py-8 text-center text-sm text-ink-soft">
               まだ投稿したサービスはありません。
@@ -97,8 +110,8 @@ export function MyPageScreen() {
               </div>
             </div>
           )}
-          <p className="mt-3 text-xs text-ink-faint">
-            ※ 掲載申請後、運営確認を経て掲載されたサービスがここに表示されます（送信先・保存先の接続後に有効になります）。
+          <p className="mt-3 text-xs leading-relaxed text-ink-faint">
+            ※ 各サービスは投稿者本人として、編集申請・非公開申請・削除申請ができます。申請は運営が確認のうえ反映します（送信先の接続後に有効になります）。{isAdmin && "管理者は非公開・削除を直接行えます。"}
           </p>
         </section>
       </div>
