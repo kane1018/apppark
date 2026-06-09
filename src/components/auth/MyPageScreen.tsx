@@ -7,6 +7,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { services } from "@/data/services";
 import { siteConfig } from "@/config/site";
 import { Avatar } from "@/components/Avatar";
+import { isAdmin } from "@/lib/security/authz";
 import { OwnerServiceList } from "@/components/auth/OwnerServiceList";
 import { IdeaProvider } from "@/components/ideas/IdeaProvider";
 import { MyIdeasSection } from "@/components/ideas/MyIdeasSection";
@@ -45,7 +46,7 @@ export function MyPageScreen() {
       (isOwner && s.authorId === siteConfig.owner.authorId)
   );
   const nickname = user.nickname || user.displayName;
-  const isAdmin = user.role === "admin";
+  const admin = isAdmin(user);
   const ideaBornServices = myServices.filter((s) => s.relatedIdeaId !== null);
 
   async function save(e: React.FormEvent) {
@@ -124,7 +125,7 @@ export function MyPageScreen() {
             )}
           </div>
           {myServices.length > 0 ? (
-            <OwnerServiceList services={myServices} isAdmin={isAdmin} />
+            <OwnerServiceList services={myServices} isAdmin={admin} />
           ) : (
             <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-5 py-8 text-center text-sm text-ink-soft">
               まだ投稿したサービスはありません。
@@ -134,7 +135,7 @@ export function MyPageScreen() {
             </div>
           )}
           <p className="mt-3 text-xs leading-relaxed text-ink-faint">
-            ※ 各サービスは投稿者本人として、編集申請・非公開申請・削除申請ができます。申請は運営が確認のうえ反映します（送信先の接続後に有効になります）。{isAdmin && "管理者は非公開・削除を直接行えます。"}
+            ※ 各サービスは投稿者本人として、編集申請・非公開申請・削除申請ができます。申請は運営が確認のうえ反映します（送信先の接続後に有効になります）。{admin && "管理者は非公開・削除を直接行えます。"}
           </p>
         </section>
 
@@ -142,7 +143,7 @@ export function MyPageScreen() {
         {ideaBornServices.length > 0 && (
           <section>
             <h2 className="mb-3 text-base font-bold text-brand-800">アイデアから作成したサービス</h2>
-            <OwnerServiceList services={ideaBornServices} isAdmin={isAdmin} />
+            <OwnerServiceList services={ideaBornServices} isAdmin={admin} />
           </section>
         )}
 
