@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { siteConfig } from "@/config/site";
+import { safeUrl } from "@/lib/safeUrl";
 
 /**
  * 外部サービスを開くボタン（セクション13-2）。
@@ -23,9 +24,11 @@ export function ExternalServiceButton({
 }) {
   const [open, setOpen] = useState(false);
 
-  let host = url;
+  // http/https のみ許可。危険なスキームは無効化（リンクを無効＝開かない）。
+  const href = safeUrl(url);
+  let host = href ?? url;
   try {
-    host = new URL(url).host;
+    if (href) host = new URL(href).host;
   } catch {
     /* noop */
   }
@@ -73,15 +76,21 @@ export function ExternalServiceButton({
               >
                 キャンセル
               </button>
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                onClick={() => setOpen(false)}
-                className="btn-primary"
-              >
-                外部サービスを開く ↗
-              </a>
+              {href ? (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  onClick={() => setOpen(false)}
+                  className="btn-primary"
+                >
+                  外部サービスを開く ↗
+                </a>
+              ) : (
+                <span className="btn-primary cursor-not-allowed opacity-60" aria-disabled>
+                  リンクを開けません
+                </span>
+              )}
             </div>
           </div>
         </div>

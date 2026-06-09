@@ -95,6 +95,7 @@ export function IdeaForm() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
+          maxLength={100}
           className="field-input"
           placeholder="例：面接日程の返信文を一瞬で作れるツールが欲しい"
         />
@@ -106,6 +107,7 @@ export function IdeaForm() {
           onChange={(e) => setProblem(e.target.value)}
           required
           rows={3}
+          maxLength={1000}
           className="field-input resize-y"
           placeholder="例：企業ごとに丁寧な返信文を考えるのが面倒で、失礼がないか不安になる"
         />
@@ -117,6 +119,7 @@ export function IdeaForm() {
           onChange={(e) => setDesiredTool(e.target.value)}
           required
           rows={3}
+          maxLength={1000}
           className="field-input resize-y"
           placeholder="例：企業名、担当者名、希望日時を入れるだけで、自然な返信文を作ってくれるツール"
         />

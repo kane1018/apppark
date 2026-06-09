@@ -93,7 +93,7 @@ export function MyPageScreen() {
               <label className="field-label" htmlFor="dn">
                 公開表示名（必須・AppPark上に表示されます）
               </label>
-              <input id="dn" required value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="field-input" />
+              <input id="dn" required maxLength={50} value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="field-input" />
             </div>
             <div>
               <label className="field-label" htmlFor="cn">

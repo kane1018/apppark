@@ -14,6 +14,7 @@ import {
   ideaAuthorName,
 } from "@/data/ideas";
 import { formatDate } from "@/lib/labels";
+import { safeUrl, safeImageUrl } from "@/lib/safeUrl";
 import { submissionMessage } from "@/lib/moderation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LoginPanel } from "@/components/auth/LoginPanel";
@@ -58,6 +59,9 @@ export function IdeaDetail({
   }
 
   const liked = hasLiked(idea.id);
+  // ユーザー入力URLは http/https のみ許可（javascript: data: 等を遮断）
+  const safeSimilarUrl = safeUrl(idea.similarServiceUrl);
+  const safeImage = safeImageUrl(idea.referenceImageUrl);
 
   return (
     <div className="space-y-8">
@@ -157,20 +161,20 @@ export function IdeaDetail({
             {idea.useCase && <Info label="使いたい場面" value={idea.useCase} />}
             {idea.audienceTags.length > 0 && <Info label="想定利用者" value={idea.audienceTags.join("、")} />}
             <Info label="ミニツールでの実現性" value={miniToolPotentialLabels[idea.miniToolPotential]} />
-            {idea.similarServiceUrl && (
+            {safeSimilarUrl && (
               <div className="rounded-xl bg-gray-50 px-3 py-2">
                 <dt className="text-xs font-semibold text-ink-faint">似ているサービス</dt>
                 <dd className="mt-0.5 break-all text-sm">
-                  <a href={idea.similarServiceUrl} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-600 underline-offset-2 hover:underline">
-                    {idea.similarServiceUrl} ↗
+                  <a href={safeSimilarUrl} target="_blank" rel="noopener noreferrer nofollow" className="text-brand-600 underline-offset-2 hover:underline">
+                    {safeSimilarUrl} ↗
                   </a>
                 </dd>
               </div>
             )}
           </dl>
-          {idea.referenceImageUrl && (
+          {safeImage && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={idea.referenceImageUrl} alt="参考画像" className="mt-4 max-h-80 w-auto rounded-xl border border-gray-200" loading="lazy" />
+            <img src={safeImage} alt="参考画像" className="mt-4 max-h-80 w-auto rounded-xl border border-gray-200" loading="lazy" referrerPolicy="no-referrer" />
           )}
         </Block>
       )}
@@ -247,7 +251,7 @@ function IdeaComments({ ideaId }: { ideaId: string }) {
         <form onSubmit={submit} className="rounded-2xl border border-gray-200 bg-white p-4">
           {message && <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{message}</div>}
           <p className="mb-2 text-xs text-ink-faint">投稿者：<span className="font-semibold text-ink-soft">{user.displayName}</span>（公開表示名）</p>
-          <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} required className="field-input resize-y" placeholder="追加要望・使いたい場面・参考情報・「作ってみたい」など" />
+          <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3} required maxLength={1000} className="field-input resize-y" placeholder="追加要望・使いたい場面・参考情報・「作ってみたい」など" />
           <label className="mt-2 flex items-start gap-2 text-xs text-ink-soft">
             <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-gray-300 text-accent-500 focus:ring-accent-400" />
             <span><a href="/terms" className="text-brand-600 underline-offset-2 hover:underline">利用規約</a>・コメントルールに同意します。</span>

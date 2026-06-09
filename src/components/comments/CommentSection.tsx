@@ -388,6 +388,7 @@ function CommentComposer({
         onChange={(e) => setBody(e.target.value)}
         rows={mode === "reply" ? 2 : 3}
         required
+        maxLength={1000}
         className="field-input resize-y"
         placeholder="建設的な感想・質問・改善要望を歓迎します。個人情報は書かないでください。"
         aria-label={mode === "reply" ? "返信内容" : "コメント本文"}

@@ -14,6 +14,7 @@ import { getTagDef } from "@/data/tags";
 import { getSeedIdeaById } from "@/data/ideas";
 import { getSimilarServices } from "@/lib/filters";
 import { resolvePublicAuthor } from "@/lib/authors";
+import { safeUrl } from "@/lib/safeUrl";
 import { Avatar } from "@/components/Avatar";
 import { formatDate } from "@/lib/labels";
 import { buildMetadata, breadcrumbJsonLd, softwareApplicationJsonLd } from "@/lib/seo";
@@ -81,7 +82,9 @@ export default function ServiceDetailPage({
   const internalRoute = !configTool && isInternalToolUrl(service.url);
   const isDev = service.listingType === "development";
   const isIframe = service.listingType === "iframe_embed";
-  const iframeApproved = isIframe && service.iframeEmbed.approved && !!service.iframeEmbed.url;
+  // 埋め込みは「管理者承認済み」かつ http/https の安全なURLのときのみ
+  const iframeSafeUrl = safeUrl(service.iframeEmbed.url);
+  const iframeApproved = isIframe && service.iframeEmbed.approved && !!iframeSafeUrl;
   const inPage = configTool || internalRoute;
 
   // パンくず：AppPark内ミニツールは「AppPark内ミニツール」階層、それ以外は「サービス一覧」
@@ -371,7 +374,7 @@ export default function ServiceDetailPage({
               note="外部サイトの埋め込みです。AppParkは埋め込み先の内容・安全性を保証しません。"
             >
               <iframe
-                src={service.iframeEmbed.url as string}
+                src={iframeSafeUrl as string}
                 title={`${service.name} の埋め込み`}
                 sandbox="allow-scripts allow-forms allow-popups"
                 referrerPolicy="no-referrer"
@@ -555,18 +558,22 @@ export default function ServiceDetailPage({
               <div className="mt-4">
                 <p className="text-xs font-semibold text-ink-faint">作者SNS・リンク</p>
                 <ul className="mt-1.5 flex flex-wrap gap-2">
-                  {service.authorLinks.map((l) => (
-                    <li key={l.url}>
-                      <a
-                        href={l.url}
-                        target="_blank"
-                        rel="noopener noreferrer nofollow"
-                        className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-ink-soft hover:bg-brand-50 hover:text-brand-700"
-                      >
-                        {l.label} ↗
-                      </a>
-                    </li>
-                  ))}
+                  {service.authorLinks.map((l) => {
+                    const href = safeUrl(l.url);
+                    if (!href) return null;
+                    return (
+                      <li key={l.url}>
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noopener noreferrer nofollow"
+                          className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-ink-soft hover:bg-brand-50 hover:text-brand-700"
+                        >
+                          {l.label} ↗
+                        </a>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
