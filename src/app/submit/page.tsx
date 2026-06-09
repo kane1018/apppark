@@ -74,8 +74,8 @@ export default function SubmitPage({
 
         <AuthGate
           returnTo="/submit"
-          heading="サービスを掲載するにはログインが必要です。"
-          body="AppParkでは、掲載内容の確認や投稿者への連絡のため、サービス投稿にはログインをお願いしています。ログイン後、Webサービス・便利ツールの掲載申請ができます。"
+          heading="投稿にはログインが必要です。"
+          body="AppParkでは、掲載内容の確認や投稿者への連絡のため、サービス投稿にはログインをお願いしています。Googleアカウントでログインしてください。ログイン後、Webサービス・便利ツールの掲載申請ができます。"
         >
           <h2 className="mb-3 text-lg font-bold text-brand-900">掲載申請フォーム</h2>
           <SubmitForm ideaId={ideaId} />

@@ -123,7 +123,7 @@ export function CommentSection({
       ) : (
         <LoginRequired
           heading="コメントするにはログインが必要です。"
-          body="感想、質問、改善要望、バグ報告を投稿するにはログインしてください。"
+          body="Googleアカウントでログインするとコメントできます。感想・質問・改善要望・バグ報告を投稿できます。"
         />
       )}
 

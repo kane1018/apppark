@@ -36,15 +36,16 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 
 -- ============ profiles ============
--- email は auth.users 側で管理し、profiles には保持しない（公開漏洩の面を減らす）。
+-- email / role は非公開（本人マイページ・管理者のみ）。公開は public_profiles ビュー経由。
 create table if not exists public.profiles (
   id            uuid primary key references auth.users (id) on delete cascade,
+  email         text,                 -- 非公開（本人/管理者のみ。公開ビューには含めない）
   slug          text unique not null,
   nickname      text not null,
   display_name  text not null,
   avatar_url    text,
   bio           text,
-  role          app_role not null default 'user',
+  role          app_role not null default 'user',  -- 非公開（admin判定）
   contact_name  text,                 -- 非公開（運営確認用）
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
@@ -190,22 +191,50 @@ create index if not exists idx_submissions_submitter on public.submissions (subm
 create index if not exists idx_submissions_status on public.submissions (status);
 
 -- ============ サインアップ時に profiles を自動作成 ============
+-- Googleログイン後、profiles に行が無ければ自動作成する。
+--   nickname     = Google名 or メールの@より前
+--   display_name = nickname
+--   avatar_url   = Googleプロフィール画像（あれば）
+--   email        = Googleアカウントのメール（非公開）
+--   role         = 'user'（ただしサイトオーナーのメールは 'admin'）
+-- オーナー（kansuinaoi@gmail.com）は nickname / display_name を 'kane' に固定。
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer set search_path = public
 as $$
 declare
-  base_slug text;
+  owner_email text := 'kansuinaoi@gmail.com';
+  is_owner    boolean := lower(new.email) = owner_email;
+  meta        jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
+  base_name   text;
+  base_slug   text;
+  the_role    app_role;
 begin
-  base_slug := coalesce(new.raw_user_meta_data->>'nickname',
-                        split_part(new.email, '@', 1), 'user');
-  insert into public.profiles (id, slug, nickname, display_name)
+  if is_owner then
+    base_name := 'kane';
+  else
+    base_name := coalesce(
+      meta->>'full_name',
+      meta->>'name',
+      meta->>'nickname',
+      split_part(new.email, '@', 1),
+      'user'
+    );
+  end if;
+  base_slug := regexp_replace(lower(base_name), '[^a-z0-9]+', '-', 'g');
+  if base_slug = '' or base_slug is null then base_slug := 'user'; end if;
+  the_role := case when is_owner then 'admin'::app_role else 'user'::app_role end;
+
+  insert into public.profiles (id, email, slug, nickname, display_name, avatar_url, role)
   values (
     new.id,
+    new.email,
     base_slug || '-' || substr(new.id::text, 1, 6),  -- 衝突回避
-    coalesce(new.raw_user_meta_data->>'display_name', base_slug),
-    coalesce(new.raw_user_meta_data->>'display_name', base_slug)
+    base_name,
+    base_name,
+    nullif(meta->>'avatar_url', ''),
+    the_role
   )
   on conflict (id) do nothing;
   return new;

@@ -263,7 +263,7 @@ function IdeaComments({ ideaId }: { ideaId: string }) {
       ) : (
         <div className="rounded-2xl border border-gray-200 bg-white p-5">
           <h3 className="text-base font-bold text-brand-900">コメントするにはログインが必要です。</h3>
-          <p className="mt-1.5 text-sm text-ink-soft">追加要望や参考情報の共有にはログインしてください。</p>
+          <p className="mt-1.5 text-sm text-ink-soft">Googleアカウントでログインするとコメントできます。追加要望や参考情報を共有できます。</p>
           <div className="mt-4 sm:max-w-sm"><LoginPanel /></div>
         </div>
       )}

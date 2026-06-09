@@ -52,8 +52,10 @@ function isOwnerEmail(email: string): boolean {
 function mapSupaUser(u: SupaUser): AppUser {
   const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
   const app = (u.app_metadata ?? {}) as Record<string, unknown>;
-  const role = (app.role || meta.role || "user") as UserRole;
   const owner = isOwnerEmail(u.email ?? "");
+  // role はサーバー（profiles.role）が真実。UIではオーナーを admin として扱い、
+  // それ以外は JWT の app_metadata.role（無ければ user）。最終判定は RLS/サーバー側。
+  const role = (owner ? "admin" : app.role || meta.role || "user") as UserRole;
   const displayName = owner
     ? siteConfig.owner.displayName
     : (meta.display_name as string) ||
@@ -193,7 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         displayName: owner ? siteConfig.owner.displayName : name,
         avatarUrl: owner ? siteConfig.owner.avatarUrl : null,
         contactName: null,
-        role: "user",
+        role: owner ? "admin" : "user",
         createdAt: now,
         updatedAt: now,
       };

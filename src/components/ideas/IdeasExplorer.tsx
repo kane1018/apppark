@@ -85,7 +85,7 @@ export function IdeasExplorer() {
           <AuthGate
             returnTo="/ideas"
             heading="アイデアを投稿するにはログインが必要です。"
-            body="AppParkでは、スパム防止と投稿内容の管理のため、アイデア投稿にはログインをお願いしています。"
+            body="AppParkでは、スパム防止と投稿内容の管理のため、アイデア投稿にはログインをお願いしています。Googleアカウントでログインするとアイデアを投稿できます。"
           >
             <IdeaForm />
           </AuthGate>
