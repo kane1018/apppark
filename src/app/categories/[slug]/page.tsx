@@ -16,6 +16,13 @@ import {
   breadcrumbJsonLd,
   collectionPageJsonLd,
 } from "@/lib/seo";
+import {
+  categorySeoLead,
+  categoryFaq,
+  needsProfessionalCaution,
+  PROFESSIONAL_CAUTION,
+} from "@/lib/seoContent";
+import { FaqSection } from "@/components/FaqSection";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CategoryNav } from "@/components/CategoryNav";
 import { ServiceGrid } from "@/components/ServiceGrid";
@@ -74,11 +81,22 @@ export default function CategoryDetailPage({
         <IconBadge name={category.icon} tone="navy" size="lg" />
         <div>
           <h1 className="text-2xl font-black text-brand-900 sm:text-3xl">
-            {category.name}
+            {category.name}一覧
           </h1>
           <p className="mt-1.5 text-sm text-ink-soft">{category.description}</p>
         </div>
       </header>
+
+      {/* このカテゴリでできること（SEO本文冒頭） */}
+      <section className="mb-6">
+        <h2 className="mb-2 text-sm font-bold text-brand-800">このカテゴリでできること</h2>
+        <p className="text-sm leading-relaxed text-ink-soft">{categorySeoLead(category)}</p>
+        {needsProfessionalCaution(category.slug) && (
+          <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-xs leading-relaxed text-amber-900/90">
+            {PROFESSIONAL_CAUTION}
+          </p>
+        )}
+      </section>
 
       {/* 詳細カテゴリ（このカテゴリ内で絞り込む導線） */}
       {category.subCategories && category.subCategories.length > 0 && (
@@ -155,6 +173,11 @@ export default function CategoryDetailPage({
           </div>
         </section>
       )}
+
+      {/* FAQ（よくある質問）＋ FAQPage 構造化データ */}
+      <div className="mt-12">
+        <FaqSection items={categoryFaq(category)} />
+      </div>
     </div>
   );
 }

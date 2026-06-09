@@ -206,6 +206,8 @@ export interface Service {
   ctaUrl: string | null;
   /** このサービスの元になったアイデア投稿の id（アイデア掲示板から作られた場合） */
   relatedIdeaId: string | null;
+  /** よくある質問（任意）。未指定なら詳細ページで一般的なFAQを自動生成します。 */
+  faq: { q: string; a: string }[];
   /** 利用者の声（実際に寄せられたもののみ。無ければ空配列） */
   voices: UsageVoice[];
 }

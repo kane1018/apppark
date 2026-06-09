@@ -155,6 +155,46 @@ export function collectionPageJsonLd(input: {
   };
 }
 
+/** FAQPage 構造化データ（FAQセクションのあるページ用） */
+export function faqPageJsonLd(items: { q: string; a: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+}
+
+/**
+ * SoftwareApplication / WebApplication 構造化データ（個別サービス・ミニツール用）。
+ * operatingSystem は "Web"、provider は AppPark。無料サービスは price 0 の Offer を付与。
+ */
+export function softwareApplicationJsonLd(input: {
+  name: string;
+  description: string;
+  applicationCategory: string;
+  path: string;
+  isFree: boolean;
+  isWebApp?: boolean;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": input.isWebApp ? "WebApplication" : "SoftwareApplication",
+    name: input.name,
+    description: input.description,
+    applicationCategory: input.applicationCategory,
+    operatingSystem: "Web",
+    url: `${siteConfig.url}${input.path}`,
+    provider: { "@type": "Organization", name: siteConfig.name, url: siteConfig.url },
+    ...(input.isFree
+      ? { offers: { "@type": "Offer", price: "0", priceCurrency: "JPY" } }
+      : {}),
+  };
+}
+
 /** BreadcrumbList 構造化データ */
 export function breadcrumbJsonLd(crumbs: Crumb[]) {
   return {

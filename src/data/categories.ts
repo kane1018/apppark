@@ -274,7 +274,7 @@ export function getCategoryName(slug: string): string {
 
 /** カテゴリのSEOタイトル（未指定なら name から生成） */
 export function categorySeoTitle(c: Category): string {
-  return c.seoTitle ?? `${c.name}一覧`;
+  return c.seoTitle ?? `${c.name}一覧｜無料・便利なWebサービスを探すなら`;
 }
 
 /** カテゴリのSEO説明（未指定なら description を使用） */

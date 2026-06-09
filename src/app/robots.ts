@@ -15,6 +15,16 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
+      // 公開対象外（管理・下書き・審査中・プレビュー・API・ログイン後ページ）はクロール不要
+      disallow: [
+        "/admin",
+        "/drafts",
+        "/preview",
+        "/api",
+        "/mypage",
+        "/login",
+        "/auth",
+      ],
     },
     sitemap: `${siteConfig.url}/sitemap.xml`,
     host: siteConfig.url,

@@ -50,6 +50,11 @@ const coreServices: Service[] = [
     techStack: ["Next.js", "TypeScript"],
     reasonCreated: "投稿前の文字数確認を、広告だらけのサイトに頼らず素早く行いたかったため。",
     recruitmentStatus: ["seeking_feedback"],
+    faq: [
+      { q: "無料で使えますか？", a: "はい、無料で利用できます。登録・インストールも不要です。" },
+      { q: "入力した文章は保存されますか？", a: "入力内容は外部に送信せず、ブラウザ上で処理する設計です（保存されません）。" },
+      { q: "スマホでも使えますか？", a: "はい、スマホのブラウザからも利用できます。" },
+    ],
   }),
   tool({
     id: "tool-image-compress",
@@ -87,6 +92,11 @@ const coreServices: Service[] = [
     techStack: ["Next.js", "Canvas API"],
     reasonCreated: "画像をアップロードせずに手元で圧縮したいニーズに応えたかったため。",
     recruitmentStatus: ["seeking_feedback"],
+    faq: [
+      { q: "画像はサーバーにアップロードされますか？", a: "いいえ。画像はあなたの端末（ブラウザ内）で処理され、サーバーへアップロードされません。" },
+      { q: "無料で使えますか？", a: "はい、無料で利用できます。登録・インストールも不要です。" },
+      { q: "スマホでも使えますか？", a: "はい、スマホのブラウザからも利用できます。" },
+    ],
   }),
   tool({
     id: "tool-password-generator",

@@ -14,7 +14,16 @@ import { getTagDef } from "@/data/tags";
 import { getSeedIdeaById } from "@/data/ideas";
 import { getSimilarServices } from "@/lib/filters";
 import { formatDate } from "@/lib/labels";
-import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
+import { buildMetadata, breadcrumbJsonLd, softwareApplicationJsonLd } from "@/lib/seo";
+import {
+  serviceSeoTitle,
+  serviceSeoDescription,
+  serviceFaq,
+  internalToolLead,
+  needsProfessionalCaution,
+  PROFESSIONAL_CAUTION,
+} from "@/lib/seoContent";
+import { FaqSection } from "@/components/FaqSection";
 import { siteConfig, SERVICE_DISCLAIMER } from "@/config/site";
 import { PricingBadge, SponsorTag, StatusBadge } from "@/components/badges";
 import { recruitmentMeta, hasConsultation } from "@/lib/recruitment";
@@ -47,8 +56,8 @@ export function generateMetadata({
   const service = getServiceBySlug(params.slug);
   if (!service) return buildMetadata({ title: "サービス詳細", path: "/services" });
   return buildMetadata({
-    title: service.name,
-    description: service.shortDescription,
+    title: serviceSeoTitle(service),
+    description: serviceSeoDescription(service),
     path: `/services/${service.slug}`,
     ogType: "article",
     // og:image / twitter:image は opengraph-image.tsx（サービス別の動的PNG）が提供
@@ -71,26 +80,33 @@ export default function ServiceDetailPage({
   const isDev = service.listingType === "development";
   const isIframe = service.listingType === "iframe_embed";
   const iframeApproved = isIframe && service.iframeEmbed.approved && !!service.iframeEmbed.url;
+  const inPage = configTool || internalRoute;
 
-  const crumbs = [
-    { name: "ホーム", path: "/" },
-    { name: "サービス一覧", path: "/services" },
-    { name: service.name, path: `/services/${service.slug}` },
-  ];
+  // パンくず：AppPark内ミニツールは「AppPark内ミニツール」階層、それ以外は「サービス一覧」
+  const crumbs = inPage
+    ? [
+        { name: "ホーム", path: "/" },
+        { name: "AppPark内ミニツール", path: "/services?internal=1" },
+        { name: service.name, path: `/services/${service.slug}` },
+      ]
+    : [
+        { name: "ホーム", path: "/" },
+        { name: "サービス一覧", path: "/services" },
+        { name: service.name, path: `/services/${service.slug}` },
+      ];
 
-  // 構造化データ：SoftwareApplication（掲載サービス）
-  const appJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
+  // 構造化データ：SoftwareApplication / WebApplication（ページ内ツールは WebApplication）
+  const appJsonLd = softwareApplicationJsonLd({
     name: service.name,
     description: service.shortDescription,
     applicationCategory: getCategoryName(service.category),
-    url: `${siteConfig.url}/services/${service.slug}`,
-    // 無料サービスのみ価格0のOfferを付与（有料は価格不明のため offers を出さない）
-    ...(service.pricing === "free"
-      ? { offers: { "@type": "Offer", price: "0", priceCurrency: "JPY" } }
-      : {}),
-  };
+    path: `/services/${service.slug}`,
+    isFree: service.pricing === "free",
+    isWebApp: inPage,
+  });
+
+  const faqItems = serviceFaq(service);
+  const showCaution = needsProfessionalCaution(service.category, service.subCategories);
 
   return (
     <div className="container-content py-8">
@@ -308,11 +324,21 @@ export default function ServiceDetailPage({
           </section>
         )}
 
-        {/* 3. 何ができるサービスか */}
-        <DetailBlock title="何ができるサービスか">
+        {/* 3. このツールでできること */}
+        <DetailBlock title="このツールでできること">
+          {inPage && (
+            <p className="mb-3 rounded-xl bg-teal-50/60 px-4 py-3 text-sm leading-relaxed text-teal-900/90">
+              {internalToolLead(service)}
+            </p>
+          )}
           <p className="whitespace-pre-wrap leading-relaxed text-ink-soft">
             {service.description}
           </p>
+          {showCaution && (
+            <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-xs leading-relaxed text-amber-900/90">
+              {PROFESSIONAL_CAUTION}
+            </p>
+          )}
         </DetailBlock>
 
         {/* AppPark内ミニツール本体（このページ内で使える） */}
@@ -459,6 +485,9 @@ export default function ServiceDetailPage({
             ))}
           </ul>
         </DetailBlock>
+
+        {/* FAQ（よくある質問）＋ FAQPage 構造化データ */}
+        <FaqSection items={faqItems} />
 
         {/* 利用者の感想・質問はコメント欄で受け付けます（実際に投稿されたもののみ表示） */}
         <section>

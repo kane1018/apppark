@@ -66,7 +66,7 @@ export const siteConfig = {
 
   /** サイトの説明（メタ description の既定値） */
   description:
-    "AppParkは、AIツール、業務効率化、学習、生活便利、画像・動画、サイト制作など、面白いWebサービス・便利ツールを目的別・カテゴリ別に探せるサイトです。",
+    "AppParkは、AIツール、便利なWebサービス、個人開発のミニツールを目的別・カテゴリ別に探せるサイトです。ブラウザで使える無料ツールや、AppPark内で使えるミニツールも掲載しています。",
 
   /** OGP 用の説明（meta description とは別に最適化） */
   ogDescription:

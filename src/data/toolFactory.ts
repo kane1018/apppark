@@ -115,6 +115,7 @@ export function tool(
     | "ctaLabel"
     | "ctaUrl"
     | "relatedIdeaId"
+    | "faq"
     | "voices"
     | "subCategories"
     | "audienceTags"
@@ -154,6 +155,7 @@ export function tool(
     ctaLabel: null,
     ctaUrl: null,
     relatedIdeaId: null,
+    faq: [],
     voices: [],
     subCategories: [],
     audienceTags: [],
