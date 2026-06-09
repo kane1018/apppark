@@ -182,11 +182,11 @@ export function IdeaDetail({
       {/* コメント */}
       <IdeaComments ideaId={idea.id} />
 
-      {/* 通報 */}
+      {/* 通報（ログイン必須） */}
       <section className="rounded-2xl border border-gray-200 bg-white p-4">
         {reported ? (
           <p className="text-sm text-ink-faint">通報を受け付けました。内容を確認し、必要に応じて非表示・削除を検討します。</p>
-        ) : (
+        ) : user ? (
           <button
             type="button"
             onClick={() => { reportIdea(idea.id); setReported(true); }}
@@ -194,6 +194,11 @@ export function IdeaDetail({
           >
             ⚑ このアイデアを通報する
           </button>
+        ) : (
+          <p className="text-sm text-ink-soft">
+            <Link href="/login" className="font-semibold text-brand-600 underline-offset-2 hover:underline">ログイン</Link>
+            すると、不適切な投稿を通報できます。
+          </p>
         )}
       </section>
     </div>
@@ -284,7 +289,13 @@ function IdeaComments({ ideaId }: { ideaId: string }) {
                 {c.moderationStatus === "pending" && <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold text-amber-700">確認中</span>}
               </div>
               <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-ink-soft">{c.body}</p>
-              <button type="button" onClick={() => reportComment(c.id)} className="mt-2 text-[11px] font-semibold text-ink-faint hover:text-rose-600">通報</button>
+              {user ? (
+                <button type="button" onClick={() => reportComment(c.id)} className="mt-2 text-[11px] font-semibold text-ink-faint hover:text-rose-600">通報</button>
+              ) : (
+                <span className="mt-2 block text-[11px] text-ink-faint">
+                  <Link href="/login" className="font-semibold text-brand-600 underline-offset-2 hover:underline">ログイン</Link>すると通報できます
+                </span>
+              )}
             </li>
           ))}
         </ul>

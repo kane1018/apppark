@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { Comment, CommentType, RiskLevel } from "@/types";
 import {
   moderateComment,
@@ -227,6 +228,7 @@ function CommentItem({
 }
 
 function CommentBody({ comment, onReport }: { comment: Comment; onReport: (id: string) => void }) {
+  const { user } = useAuth();
   const [reporting, setReporting] = useState(false);
   const [reported, setReported] = useState(false);
 
@@ -285,7 +287,7 @@ function CommentBody({ comment, onReport }: { comment: Comment; onReport: (id: s
               やめる
             </button>
           </div>
-        ) : (
+        ) : user ? (
           <button
             type="button"
             onClick={() => setReporting(true)}
@@ -296,6 +298,11 @@ function CommentBody({ comment, onReport }: { comment: Comment; onReport: (id: s
             </svg>
             通報
           </button>
+        ) : (
+          <span className="text-[11px] text-ink-faint">
+            <Link href="/login" className="font-semibold text-brand-600 underline-offset-2 hover:underline">ログイン</Link>
+            すると通報できます
+          </span>
         )}
         {comment.reportedCount > 0 && (
           <span className="text-[11px] text-ink-faint">通報 {comment.reportedCount}</span>

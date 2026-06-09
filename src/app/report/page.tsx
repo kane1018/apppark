@@ -45,8 +45,8 @@ export default function ReportPage() {
         {siteConfig.requireLoginForReport ? (
           <AuthGate
             returnTo="/report"
-            heading="通報・削除依頼にはログインが必要です。"
-            body="対応状況のご連絡や本人確認のため、ログインをお願いしています。"
+            heading="通報するにはログインが必要です。"
+            body="不適切な投稿やコメントを見つけた場合、ログイン後に通報できます。いたずら通報の防止と対応状況のご連絡のため、ログインをお願いしています。Googleアカウントでログインできます。"
           >
             <div className="card p-5 sm:p-6">
               <ReportForm />

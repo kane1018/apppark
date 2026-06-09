@@ -33,9 +33,9 @@ export const siteConfig = {
 
   /**
    * 通報・削除依頼にログインを必須にするか。
-   * false：ログイン推奨（未ログインでも通報可）／true：ログイン必須。
+   * いたずら通報の防止・重複管理・対応連絡のため true（ログイン必須）。
    */
-  requireLoginForReport: false,
+  requireLoginForReport: true,
 
   /**
    * 閲覧数・クリック数・役に立った数（利用実績の数値）を表示するか。
