@@ -25,11 +25,20 @@ export default function ServicesPage({
   const tags = getAllTags();
 
   const sortParam = typeof searchParams.sort === "string" ? searchParams.sort : "";
+  const str = (v: string | string[] | undefined) =>
+    typeof v === "string" ? v : "";
   const initial: Partial<FilterState> = {
-    keyword: typeof searchParams.q === "string" ? searchParams.q : "",
-    category: typeof searchParams.category === "string" ? searchParams.category : "",
-    purpose: typeof searchParams.purpose === "string" ? searchParams.purpose : "",
-    tag: typeof searchParams.tag === "string" ? searchParams.tag : "",
+    keyword: str(searchParams.q),
+    category: str(searchParams.category),
+    subCategory: str(searchParams.sub),
+    purpose: str(searchParams.purpose),
+    audience: str(searchParams.audience),
+    toolType: str(searchParams.toolType),
+    pricingTag: str(searchParams.pricing),
+    statusTag: str(searchParams.status),
+    tag: str(searchParams.tag),
+    aiOnly: searchParams.ai === "1",
+    internalOnly: searchParams.internal === "1",
     sort: validSorts.includes(sortParam as SortKey) ? (sortParam as SortKey) : "new",
   };
 

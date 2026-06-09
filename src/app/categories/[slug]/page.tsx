@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { categories, getCategory } from "@/data/categories";
+import {
+  categories,
+  getCategory,
+  categorySeoTitle,
+  categorySeoDescription,
+} from "@/data/categories";
 import { getServicesByCategory } from "@/data/services";
+import { getPurposeName } from "@/data/purposes";
 import {
   buildMetadata,
   breadcrumbJsonLd,
@@ -26,8 +33,8 @@ export function generateMetadata({
   const category = getCategory(params.slug);
   if (!category) return buildMetadata({ title: "カテゴリ", path: "/categories" });
   return buildMetadata({
-    title: `${category.name}のWebサービス`,
-    description: `${category.name}カテゴリのWebサービス一覧。${category.description}`,
+    title: categorySeoTitle(category),
+    description: categorySeoDescription(category),
     path: `/categories/${category.slug}`,
   });
 }
@@ -69,6 +76,44 @@ export default function CategoryDetailPage({
           <p className="mt-1.5 text-sm text-ink-soft">{category.description}</p>
         </div>
       </header>
+
+      {/* 詳細カテゴリ（このカテゴリ内で絞り込む導線） */}
+      {category.subCategories && category.subCategories.length > 0 && (
+        <section className="mb-6">
+          <h2 className="mb-2 text-sm font-bold text-brand-800">詳細カテゴリから探す</h2>
+          <ul className="flex flex-wrap gap-1.5">
+            {category.subCategories.map((sub) => (
+              <li key={sub}>
+                <Link
+                  href={`/services?category=${category.slug}&sub=${encodeURIComponent(sub)}`}
+                  className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-ink-soft transition hover:bg-brand-50 hover:text-brand-700"
+                >
+                  {sub}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* 関連する目的タグ */}
+      {category.relatedPurposes && category.relatedPurposes.length > 0 && (
+        <section className="mb-6">
+          <h2 className="mb-2 text-sm font-bold text-brand-800">目的から探す</h2>
+          <ul className="flex flex-wrap gap-1.5">
+            {category.relatedPurposes.map((p) => (
+              <li key={p}>
+                <Link
+                  href={`/purposes/${p}`}
+                  className="inline-flex items-center rounded-md bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700 transition hover:bg-brand-100"
+                >
+                  {getPurposeName(p)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* カテゴリページ上部のスポンサー枠（セクション26） */}
       <div className="mb-6">

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
-import { services } from "@/data/services";
-import { categories } from "@/data/categories";
-import { purposes } from "@/data/purposes";
+import { services, getCategoryCounts } from "@/data/services";
+import { categories, majorCategories } from "@/data/categories";
+import { featuredPurposes } from "@/data/purposes";
 import { getFeaturedServices, getNewServices } from "@/lib/filters";
 import { SearchBar } from "@/components/SearchBar";
 import { ServiceGrid } from "@/components/ServiceGrid";
@@ -21,6 +21,8 @@ const fresh = getNewServices(
   services.filter((s) => !featuredIds.has(s.id)),
   6
 );
+
+const categoryCounts = getCategoryCounts();
 
 const howToSteps = [
   { title: "目的やカテゴリから探す", desc: "やりたいことや分野から、気になるサービスを見つけます。" },
@@ -83,7 +85,7 @@ export default function HomePage() {
       </section>
 
       <div className="container-content space-y-16 py-12 sm:py-16">
-        {/* 2. 目的別に探す */}
+        {/* 2. 目的別に探す（主要な目的タグのみ。すべては /purposes へ） */}
         <section>
           <SectionHeading
             title="目的から探す"
@@ -91,23 +93,35 @@ export default function HomePage() {
             moreHref="/purposes"
           />
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {purposes.map((p) => (
+            {featuredPurposes.map((p) => (
               <PurposeCard key={p.slug} purpose={p} />
             ))}
           </div>
         </section>
 
-        {/* 3. 人気カテゴリ */}
+        {/* 3. 主要カテゴリ（出しすぎないよう主要のみ。すべては /categories へ） */}
         <section>
           <SectionHeading
-            title="人気カテゴリ"
+            title="主要カテゴリ"
             description="分野ごとにWebサービスをまとめています。"
             moreHref="/categories"
           />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((c) => (
-              <CategoryCard key={c.slug} category={c} />
+            {majorCategories.map((c) => (
+              <CategoryCard
+                key={c.slug}
+                category={c}
+                count={categoryCounts[c.slug] ?? 0}
+              />
             ))}
+          </div>
+          <div className="mt-4 text-center">
+            <Link
+              href="/categories"
+              className="inline-flex items-center gap-1 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-bold text-brand-700 transition hover:border-brand-400 hover:bg-brand-50"
+            >
+              すべてのカテゴリを見る（全{categories.length}カテゴリ）→
+            </Link>
           </div>
         </section>
 

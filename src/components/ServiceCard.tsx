@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Service } from "@/types";
 import { getCategoryName } from "@/data/categories";
 import { getPurposeName } from "@/data/purposes";
+import { getTagDef } from "@/data/tags";
 import { formatDate } from "@/lib/labels";
 import { isInternalToolUrl, isConfigMiniTool } from "@/data/services";
 import { PricingBadge, SponsorTag, StatusBadge } from "@/components/badges";
@@ -18,6 +19,16 @@ export function ServiceCard({ service }: { service: Service }) {
   const configTool = isConfigMiniTool(service);
   const internalRoute = !configTool && isInternalToolUrl(service.url);
   const isDev = service.listingType === "development";
+
+  // カードに出す補助タグ（ツール形式＋利用者）。バッジで表す形式は重複を避けて除外。
+  const cardTags = [
+    ...service.toolTypeTags.filter(
+      (t) => t !== "internal-mini-tool" && t !== "external"
+    ),
+    ...service.audienceTags,
+  ]
+    .map((slug) => getTagDef(slug))
+    .filter((t): t is NonNullable<typeof t> => Boolean(t));
 
   return (
     <article className="card group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-card-hover">
@@ -80,6 +91,25 @@ export function ServiceCard({ service }: { service: Service }) {
                 </Link>
               </li>
             ))}
+          </ul>
+        )}
+
+        {/* ツール形式・利用者タグ（最大3件、超過は「ほか◯件」） */}
+        {cardTags.length > 0 && (
+          <ul className="flex flex-wrap items-center gap-1">
+            {cardTags.slice(0, 3).map((t) => (
+              <li
+                key={t.slug}
+                className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-ink-soft"
+              >
+                {t.name}
+              </li>
+            ))}
+            {cardTags.length > 3 && (
+              <li className="text-[11px] font-medium text-ink-faint">
+                ほか{cardTags.length - 3}件
+              </li>
+            )}
           </ul>
         )}
 

@@ -1,3 +1,4 @@
+import type { MiniToolType } from "@/lib/minitool/types";
 import type { Service } from "@/types";
 
 /**
@@ -10,6 +11,77 @@ import type { Service } from "@/types";
  * 後から Supabase / Firebase / Notion / スプレッドシート等に移行する場合も、
  * この Service 型に合わせてデータを返すようにすれば、UIは変更不要です。
  */
+
+/** ミニツールの種類 → ツール形式タグ slug */
+const MINI_TOOL_TYPE_TAG: Record<MiniToolType, string | null> = {
+  diagnosis: "diagnosis",
+  calculator: "calculator",
+  template_generator: "template",
+  checklist: "checklist",
+  text_transform: "text-transform",
+  none: null,
+};
+
+/** 料金（enum）→ 料金タグ slug */
+function derivePricingTags(s: Service): string[] {
+  switch (s.pricing) {
+    case "free":
+      return ["free"];
+    case "paid":
+      return ["paid"];
+    case "freemium":
+      return ["freemium"];
+    default:
+      return [];
+  }
+}
+
+/** 運営状況・属性 → 運営状態タグ slug */
+function deriveStatusTags(s: Service): string[] {
+  const tags = new Set<string>();
+  if (s.listingType === "development") tags.add("developing");
+  else if (s.status === "active") tags.add("published");
+  else if (s.status === "beta") tags.add("beta");
+  else if (s.status === "development") tags.add("developing");
+  else if (s.status === "paused") tags.add("discontinued");
+  tags.add(s.isFirstParty ? "official" : "indie");
+  if (s.isSponsored) tags.add("sponsor");
+  return Array.from(tags);
+}
+
+/** 掲載タイプ・ミニツール種別 → ツール形式タグ slug */
+function deriveToolTypeTags(s: Service): string[] {
+  const tags = new Set<string>();
+  switch (s.listingType) {
+    case "external":
+      tags.add("external");
+      break;
+    case "internal_mini_tool": {
+      tags.add("internal-mini-tool");
+      const mt = MINI_TOOL_TYPE_TAG[s.miniTool.type];
+      if (mt) tags.add(mt);
+      break;
+    }
+    case "iframe_embed":
+      tags.add("iframe");
+      break;
+    case "development":
+      tags.add("dev-service");
+      break;
+  }
+  return Array.from(tags);
+}
+
+/** AI対応かどうかの自動判定 */
+function deriveIsAiEnabled(s: Service): boolean {
+  return (
+    s.category === "ai-tools" ||
+    s.purposes.includes("try-ai") ||
+    s.aiToolsUsed.length > 0 ||
+    s.toolTypeTags.includes("ai-chat")
+  );
+}
+
 function tool(
   partial: Omit<
     Service,
@@ -39,10 +111,17 @@ function tool(
     | "ctaLabel"
     | "ctaUrl"
     | "voices"
+    | "subCategories"
+    | "audienceTags"
+    | "toolTypeTags"
+    | "pricingTags"
+    | "statusTags"
+    | "isAiEnabled"
+    | "isInternalMiniTool"
   > &
     Partial<Service>
 ): Service {
-  return {
+  const merged: Service = {
     pricing: "free",
     status: "active",
     createdAt: "2026-06-09",
@@ -69,8 +148,29 @@ function tool(
     ctaLabel: null,
     ctaUrl: null,
     voices: [],
+    subCategories: [],
+    audienceTags: [],
+    toolTypeTags: [],
+    pricingTags: [],
+    statusTags: [],
+    isAiEnabled: false,
+    isInternalMiniTool: false,
     ...partial,
   } as Service;
+
+  // 未指定のタグ・フラグは他のフィールドから自動導出（指定があれば尊重）
+  if (merged.toolTypeTags.length === 0)
+    merged.toolTypeTags = deriveToolTypeTags(merged);
+  if (merged.pricingTags.length === 0)
+    merged.pricingTags = derivePricingTags(merged);
+  if (merged.statusTags.length === 0)
+    merged.statusTags = deriveStatusTags(merged);
+  if (partial.isInternalMiniTool === undefined)
+    merged.isInternalMiniTool = merged.listingType === "internal_mini_tool";
+  if (partial.isAiEnabled === undefined)
+    merged.isAiEnabled = deriveIsAiEnabled(merged);
+
+  return merged;
 }
 
 export const services: Service[] = [
@@ -82,7 +182,11 @@ export const services: Service[] = [
     description:
       "入力した文章の文字数（スペース込み／除く）、行数、単語数、原稿用紙の枚数の目安を、ブラウザ上でリアルタイムに数えるツールです。SNSの文字数制限の確認や、原稿のボリューム把握に使えます。入力内容はサーバーに送信されません（ブラウザ内で処理）。",
     category: "writing",
-    purposes: ["write", "work-efficiency"],
+    subCategories: ["文章整形", "校正"],
+    purposes: ["write", "work-efficiency", "polish-writing"],
+    audienceTags: ["individual", "worker", "student", "creator-audience"],
+    toolTypeTags: ["internal-mini-tool", "calculator"],
+    pricingTags: ["free", "no-signup"],
     tags: ["文字数", "カウント", "文章", "無料"],
     url: "/tools/char-count",
     createdAt: "2026-06-08",
@@ -111,8 +215,12 @@ export const services: Service[] = [
     shortDescription: "画像をブラウザ内で圧縮・リサイズ。アップロード不要。",
     description:
       "JPEG・PNG・WebP画像を、ブラウザ内（あなたの端末上）でリサイズ・再圧縮してファイルサイズを小さくするツールです。最大幅と画質を選ぶだけ。画像はサーバーへアップロードされないため、安心して使えます。ブログやサイトの表示高速化、メール添付の軽量化に。",
-    category: "image-video",
+    category: "image-design",
+    subCategories: ["画像圧縮", "画像編集"],
     purposes: ["edit-image", "work-efficiency"],
+    audienceTags: ["individual", "creator-audience", "marketer", "engineer"],
+    toolTypeTags: ["internal-mini-tool"],
+    pricingTags: ["free", "no-signup"],
     tags: ["画像圧縮", "リサイズ", "ブラウザ完結", "無料"],
     url: "/tools/image-compress",
     createdAt: "2026-06-08",
@@ -144,8 +252,12 @@ export const services: Service[] = [
     shortDescription: "強度を選べる安全なランダムパスワードを生成します。",
     description:
       "長さや文字種（英大文字・小文字・数字・記号）を選んで、推測されにくいランダムなパスワードを生成するツールです。生成はすべてブラウザ内で行われ、外部に送信されません。区別しにくい文字（0/O, 1/l）を除外するオプションもあります。",
-    category: "developer",
+    category: "dev",
+    subCategories: ["開発補助"],
     purposes: ["work-efficiency", "business-tools"],
+    audienceTags: ["individual", "engineer", "worker"],
+    toolTypeTags: ["internal-mini-tool", "random"],
+    pricingTags: ["free", "no-signup"],
     tags: ["パスワード", "セキュリティ", "生成", "無料"],
     url: "/tools/password-generator",
     createdAt: "2026-06-07",
@@ -177,7 +289,11 @@ export const services: Service[] = [
     description:
       "金額と税率（10%・8%・任意）を入力して、税込・税抜の価格を相互に計算できるツールです。割引率を入れれば割引後の価格も同時にわかります。買い物・見積もり・価格設定の確認に。",
     category: "calc-diagnosis",
-    purposes: ["calculate", "business-tools"],
+    subCategories: ["料金計算", "割合計算"],
+    purposes: ["calculate", "business-tools", "manage-money"],
+    audienceTags: ["individual", "sole-proprietor", "small-business", "worker"],
+    toolTypeTags: ["internal-mini-tool", "calculator"],
+    pricingTags: ["free", "no-signup"],
     tags: ["計算", "税込", "割引", "無料"],
     url: "/tools/price-calc",
     createdAt: "2026-06-06",
@@ -207,7 +323,11 @@ export const services: Service[] = [
     description:
       "カラーコードを HEX（#RRGGBB）と RGB の間で相互変換できるツールです。スライダーで色を調整しながら、プレビューとコードを同時に確認できます。デザインやコーディングでの色指定に。",
     category: "creator",
-    purposes: ["edit-image", "build-site"],
+    subCategories: ["画像素材"],
+    purposes: ["edit-image", "build-site", "creative"],
+    audienceTags: ["creator-audience", "engineer", "code-beginner"],
+    toolTypeTags: ["internal-mini-tool"],
+    pricingTags: ["free", "no-signup"],
     tags: ["カラー", "HEX", "RGB", "デザイン"],
     url: "/tools/color-converter",
     createdAt: "2026-06-05",
@@ -236,7 +356,11 @@ export const services: Service[] = [
     description:
       "「25分集中 → 5分休憩」を繰り返すポモドーロ・テクニック用のタイマーです。集中と休憩を切り替えながら作業を進められます。時間はブラウザ内でカウントし、終了時に通知（音）でお知らせします。",
     category: "productivity",
+    subCategories: ["タスク管理"],
     purposes: ["work-efficiency", "study"],
+    audienceTags: ["individual", "worker", "student", "freelance"],
+    toolTypeTags: ["internal-mini-tool"],
+    pricingTags: ["free", "no-signup"],
     tags: ["タイマー", "集中", "ポモドーロ", "無料"],
     url: "/tools/pomodoro-timer",
     createdAt: "2026-06-04",
@@ -267,7 +391,10 @@ export const services: Service[] = [
     description:
       "「何から使えばいいか分からない」人向けに、目的・スキル・重視点の3問から、相性の良いAIツールのタイプを提案する診断ミニツールです。AppPark内で完結し、結果は保存しません。",
     category: "ai-tools",
-    purposes: ["try-ai", "work-efficiency"],
+    subCategories: ["AI診断"],
+    purposes: ["try-ai", "work-efficiency", "diagnose"],
+    audienceTags: ["individual", "ai-beginner", "beginner"],
+    pricingTags: ["free", "no-signup"],
     tags: ["診断", "AI", "無料"],
     url: "",
     listingType: "internal_mini_tool",
@@ -341,7 +468,10 @@ export const services: Service[] = [
     description:
       "時給（単価）と想定作業時間を入れるだけで、おおよその費用を計算するミニツールです。見積もりの初期検討や、外注・内製の比較の目安に。AppPark内で計算し、入力は保存しません。",
     category: "calc-diagnosis",
-    purposes: ["calculate", "business-tools"],
+    subCategories: ["見積もり", "作業時間計算"],
+    purposes: ["calculate", "business-tools", "manage-money"],
+    audienceTags: ["freelance", "sole-proprietor", "small-business"],
+    pricingTags: ["free", "no-signup"],
     tags: ["計算", "見積もり", "無料"],
     url: "",
     listingType: "internal_mini_tool",
@@ -377,7 +507,10 @@ export const services: Service[] = [
     description:
       "宛名・用件・希望日などを入力すると、丁寧な問い合わせ返信文の下書きを生成するテンプレートツールです。AIではなく定型テンプレートで生成し、コピーしてそのまま使えます。",
     category: "writing",
+    subCategories: ["メール作成"],
     purposes: ["write", "work-efficiency"],
+    audienceTags: ["worker", "sole-proprietor", "small-business"],
+    pricingTags: ["free", "no-signup"],
     tags: ["テンプレート", "メール", "無料"],
     url: "",
     listingType: "internal_mini_tool",
@@ -412,8 +545,11 @@ export const services: Service[] = [
     shortDescription: "公開前の確認項目をチェック。進捗率も表示します。",
     description:
       "Webサイトを公開する前に確認したい項目（表示・SEO・法務・運用）をチェックできるリストです。進捗率が出るので抜け漏れ防止に。チェック状態はこの端末に保存され、ログインなしで使えます。",
-    category: "website",
+    category: "dev",
+    subCategories: ["SEOチェック", "開発補助"],
     purposes: ["build-site", "work-efficiency"],
+    audienceTags: ["engineer", "code-beginner", "freelance", "small-business"],
+    pricingTags: ["free", "no-signup"],
     tags: ["チェックリスト", "公開前", "無料"],
     url: "",
     listingType: "internal_mini_tool",
@@ -451,7 +587,10 @@ export const services: Service[] = [
     description:
       "貼り付けた文章の余分な空行・空白を整理したり、各行を箇条書きにしたり、全角英数を半角に変換したりできる、ルールベースの整形ツールです。AIは使わず、AppPark内で処理します。",
     category: "writing",
-    purposes: ["write", "work-efficiency"],
+    subCategories: ["文章整形"],
+    purposes: ["write", "work-efficiency", "polish-writing"],
+    audienceTags: ["individual", "worker", "creator-audience"],
+    pricingTags: ["free", "no-signup"],
     tags: ["整形", "文章", "無料"],
     url: "",
     listingType: "internal_mini_tool",
@@ -494,11 +633,35 @@ export function getServicesByPurpose(purposeSlug: string): Service[] {
   return services.filter((s) => s.purposes.includes(purposeSlug));
 }
 
+export function getServicesBySubCategory(sub: string): Service[] {
+  return services.filter((s) => s.subCategories.includes(sub));
+}
+
+/** 汎用タグ（利用者別・ツール形式・料金・運営状態）の slug でサービスを取得 */
+export function getServicesByTagSlug(slug: string): Service[] {
+  return services.filter(
+    (s) =>
+      s.audienceTags.includes(slug) ||
+      s.toolTypeTags.includes(slug) ||
+      s.pricingTags.includes(slug) ||
+      s.statusTags.includes(slug)
+  );
+}
+
 /** すべてのタグ（重複なし） */
 export function getAllTags(): string[] {
   const set = new Set<string>();
   services.forEach((s) => s.tags.forEach((t) => set.add(t)));
   return Array.from(set).sort();
+}
+
+/** カテゴリ別の掲載数（slug → 件数） */
+export function getCategoryCounts(): Record<string, number> {
+  const counts: Record<string, number> = {};
+  services.forEach((s) => {
+    counts[s.category] = (counts[s.category] ?? 0) + 1;
+  });
+  return counts;
 }
 
 /** 内部の運営作成ツールか（url が /tools/ で始まる） */

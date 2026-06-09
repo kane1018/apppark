@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Pricing, RecruitmentStatus, Service, ServiceStatus } from "@/types";
+import type { RecruitmentStatus, Service } from "@/types";
 import {
   defaultFilterState,
   filterAndSortServices,
@@ -9,9 +9,15 @@ import {
   type FilterState,
   type SortKey,
 } from "@/lib/filters";
-import { pricingLabels, statusLabels } from "@/lib/labels";
-import { categories, getCategoryName } from "@/data/categories";
+import { categories, getCategory, getCategoryName } from "@/data/categories";
 import { purposes, getPurposeName } from "@/data/purposes";
+import {
+  audienceTags,
+  toolTypeTags,
+  pricingTags as pricingTagDefs,
+  statusTags as statusTagDefs,
+  getTagName,
+} from "@/data/tags";
 import { recruitmentMeta } from "@/lib/recruitment";
 import { ServiceGrid } from "@/components/ServiceGrid";
 import { RecruitmentStatusFilter } from "@/components/recruitment/RecruitmentStatusFilter";
@@ -40,19 +46,35 @@ export function ServicesExplorer({
   );
 
   function update<K extends keyof FilterState>(key: K, value: FilterState[K]) {
-    setState((prev) => ({ ...prev, [key]: value }));
+    setState((prev) => {
+      const next = { ...prev, [key]: value };
+      // 大カテゴリを変えたら、詳細カテゴリの選択はリセット（不整合防止）
+      if (key === "category") next.subCategory = "";
+      return next;
+    });
   }
+
+  // 選択中の大カテゴリに紐づく詳細カテゴリ（未選択ならなし）
+  const subCategoryOptions = state.category
+    ? getCategory(state.category)?.subCategories ?? []
+    : [];
 
   const isFiltered =
     state.keyword !== "" ||
     state.category !== "" ||
+    state.subCategory !== "" ||
     state.purpose !== "" ||
+    state.audience !== "" ||
+    state.toolType !== "" ||
+    state.pricingTag !== "" ||
+    state.statusTag !== "" ||
     state.tag !== "" ||
     state.pricing !== "" ||
     state.status !== "" ||
     state.recruitment.length > 0 ||
     state.freeOnly ||
-    state.aiOnly;
+    state.aiOnly ||
+    state.internalOnly;
 
   // 適用中の絞り込みチップ（個別解除用）
   const activeChips: { key: string; label: string; onRemove: () => void }[] = [];
@@ -60,14 +82,20 @@ export function ServicesExplorer({
     activeChips.push({ key: "kw", label: `「${state.keyword}」`, onRemove: () => update("keyword", "") });
   if (state.category)
     activeChips.push({ key: "cat", label: getCategoryName(state.category), onRemove: () => update("category", "") });
+  if (state.subCategory)
+    activeChips.push({ key: "sub", label: state.subCategory, onRemove: () => update("subCategory", "") });
   if (state.purpose)
     activeChips.push({ key: "pur", label: getPurposeName(state.purpose), onRemove: () => update("purpose", "") });
+  if (state.audience)
+    activeChips.push({ key: "aud", label: getTagName(state.audience), onRemove: () => update("audience", "") });
+  if (state.toolType)
+    activeChips.push({ key: "tt", label: getTagName(state.toolType), onRemove: () => update("toolType", "") });
+  if (state.pricingTag)
+    activeChips.push({ key: "pt", label: getTagName(state.pricingTag), onRemove: () => update("pricingTag", "") });
+  if (state.statusTag)
+    activeChips.push({ key: "st", label: getTagName(state.statusTag), onRemove: () => update("statusTag", "") });
   if (state.tag)
     activeChips.push({ key: "tag", label: `#${state.tag}`, onRemove: () => update("tag", "") });
-  if (state.pricing)
-    activeChips.push({ key: "price", label: pricingLabels[state.pricing], onRemove: () => update("pricing", "") });
-  if (state.status)
-    activeChips.push({ key: "status", label: statusLabels[state.status], onRemove: () => update("status", "") });
   state.recruitment.forEach((r) =>
     activeChips.push({
       key: `rec-${r}`,
@@ -78,7 +106,9 @@ export function ServicesExplorer({
   if (state.freeOnly)
     activeChips.push({ key: "free", label: "無料のみ", onRemove: () => update("freeOnly", false) });
   if (state.aiOnly)
-    activeChips.push({ key: "ai", label: "AI関連のみ", onRemove: () => update("aiOnly", false) });
+    activeChips.push({ key: "ai", label: "AI対応のみ", onRemove: () => update("aiOnly", false) });
+  if (state.internalOnly)
+    activeChips.push({ key: "internal", label: "AppPark内ミニツールのみ", onRemove: () => update("internalOnly", false) });
 
   return (
     <div className="space-y-6">
@@ -107,12 +137,25 @@ export function ServicesExplorer({
         {/* セレクト類 */}
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Select
-            label="カテゴリ"
+            label="大カテゴリ"
             value={state.category}
             onChange={(v) => update("category", v)}
             options={[
               { value: "", label: "すべて" },
               ...categories.map((c) => ({ value: c.slug, label: c.name })),
+            ]}
+          />
+          <Select
+            label="詳細カテゴリ"
+            value={state.subCategory}
+            disabled={subCategoryOptions.length === 0}
+            onChange={(v) => update("subCategory", v)}
+            options={[
+              {
+                value: "",
+                label: state.category ? "すべて" : "まず大カテゴリを選択",
+              },
+              ...subCategoryOptions.map((s) => ({ value: s, label: s })),
             ]}
           />
           <Select
@@ -125,36 +168,48 @@ export function ServicesExplorer({
             ]}
           />
           <Select
+            label="利用者・立場"
+            value={state.audience}
+            onChange={(v) => update("audience", v)}
+            options={[
+              { value: "", label: "すべて" },
+              ...audienceTags.map((t) => ({ value: t.slug, label: t.name })),
+            ]}
+          />
+          <Select
+            label="ツール形式"
+            value={state.toolType}
+            onChange={(v) => update("toolType", v)}
+            options={[
+              { value: "", label: "すべて" },
+              ...toolTypeTags.map((t) => ({ value: t.slug, label: t.name })),
+            ]}
+          />
+          <Select
+            label="料金形態"
+            value={state.pricingTag}
+            onChange={(v) => update("pricingTag", v)}
+            options={[
+              { value: "", label: "すべて" },
+              ...pricingTagDefs.map((t) => ({ value: t.slug, label: t.name })),
+            ]}
+          />
+          <Select
+            label="運営状態"
+            value={state.statusTag}
+            onChange={(v) => update("statusTag", v)}
+            options={[
+              { value: "", label: "すべて" },
+              ...statusTagDefs.map((t) => ({ value: t.slug, label: t.name })),
+            ]}
+          />
+          <Select
             label="タグ"
             value={state.tag}
             onChange={(v) => update("tag", v)}
             options={[
               { value: "", label: "すべて" },
               ...allTags.map((t) => ({ value: t, label: `#${t}` })),
-            ]}
-          />
-          <Select
-            label="料金形態"
-            value={state.pricing}
-            onChange={(v) => update("pricing", v as Pricing | "")}
-            options={[
-              { value: "", label: "すべて" },
-              ...(Object.keys(pricingLabels) as Pricing[]).map((p) => ({
-                value: p,
-                label: pricingLabels[p],
-              })),
-            ]}
-          />
-          <Select
-            label="運営状況"
-            value={state.status}
-            onChange={(v) => update("status", v as ServiceStatus | "")}
-            options={[
-              { value: "", label: "すべて" },
-              ...(Object.keys(statusLabels) as ServiceStatus[]).map((s) => ({
-                value: s,
-                label: statusLabels[s],
-              })),
             ]}
           />
           <Select
@@ -181,9 +236,14 @@ export function ServicesExplorer({
             onChange={(v) => update("freeOnly", v)}
           />
           <Toggle
-            label="AI関連だけ表示"
+            label="AI対応だけ表示"
             checked={state.aiOnly}
             onChange={(v) => update("aiOnly", v)}
+          />
+          <Toggle
+            label="AppPark内ミニツールだけ表示"
+            checked={state.internalOnly}
+            onChange={(v) => update("internalOnly", v)}
           />
           {isFiltered && (
             <button
@@ -232,11 +292,13 @@ function Select({
   value,
   onChange,
   options,
+  disabled = false,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   options: { value: string; label: string }[];
+  disabled?: boolean;
 }) {
   return (
     <label className="block">
@@ -244,7 +306,8 @@ function Select({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="field-input"
+        disabled={disabled}
+        className="field-input disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-ink-faint"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

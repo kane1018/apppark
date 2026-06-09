@@ -25,6 +25,12 @@ import {
   Handshake,
   Share2,
   LayoutGrid,
+  Wallet,
+  Users,
+  Languages,
+  NotebookPen,
+  Scale,
+  Sparkles,
 } from "lucide-react";
 
 /**
@@ -62,7 +68,13 @@ export type IconName =
   | "file-text"
   | "handshake"
   | "share-2"
-  | "layout-grid";
+  | "layout-grid"
+  | "wallet"
+  | "users"
+  | "languages"
+  | "notebook-pen"
+  | "scale"
+  | "sparkles";
 
 const iconRegistry: Record<IconName, LucideIcon> = {
   bot: Bot,
@@ -89,6 +101,12 @@ const iconRegistry: Record<IconName, LucideIcon> = {
   handshake: Handshake,
   "share-2": Share2,
   "layout-grid": LayoutGrid,
+  wallet: Wallet,
+  users: Users,
+  languages: Languages,
+  "notebook-pen": NotebookPen,
+  scale: Scale,
+  sparkles: Sparkles,
 };
 
 export type IconTone = "navy" | "orange" | "grey";

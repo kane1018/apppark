@@ -10,6 +10,7 @@ import {
 import { getSeedCommentsForService } from "@/data/comments";
 import { getCategory, getCategoryName } from "@/data/categories";
 import { getPurposeName } from "@/data/purposes";
+import { getTagDef } from "@/data/tags";
 import { getSimilarServices } from "@/lib/filters";
 import { formatDate } from "@/lib/labels";
 import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
@@ -138,6 +139,22 @@ export default function ServiceDetailPage({
                 </p>
               </div>
 
+              {/* 詳細カテゴリ */}
+              {service.subCategories.length > 0 && (
+                <ul className="flex flex-wrap gap-1.5">
+                  {service.subCategories.map((sub) => (
+                    <li key={sub}>
+                      <Link
+                        href={`/services?category=${service.category}&sub=${encodeURIComponent(sub)}`}
+                        className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-ink-soft hover:bg-brand-50 hover:text-brand-700"
+                      >
+                        {sub}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
               {/* 目的タグ */}
               {service.purposes.length > 0 && (
                 <ul className="flex flex-wrap gap-1.5">
@@ -153,6 +170,34 @@ export default function ServiceDetailPage({
                   ))}
                 </ul>
               )}
+
+              {/* 利用者・ツール形式・料金・運営状態タグ（タグ単独ページへ） */}
+              {(() => {
+                const tagSlugs = [
+                  ...service.toolTypeTags,
+                  ...service.audienceTags,
+                  ...service.pricingTags,
+                  ...service.statusTags,
+                ];
+                const tagDefs = tagSlugs
+                  .map((s) => getTagDef(s))
+                  .filter((t): t is NonNullable<typeof t> => Boolean(t));
+                if (tagDefs.length === 0) return null;
+                return (
+                  <ul className="flex flex-wrap gap-1.5">
+                    {tagDefs.map((t) => (
+                      <li key={t.slug}>
+                        <Link
+                          href={`/tags/${t.slug}`}
+                          className="inline-flex items-center rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-ink-faint ring-1 ring-inset ring-gray-200 hover:bg-brand-50 hover:text-brand-700"
+                        >
+                          {t.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })()}
 
               <TagList tags={service.tags} linkToSearch />
 

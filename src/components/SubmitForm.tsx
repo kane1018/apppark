@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { categories } from "@/data/categories";
+import { categories, getCategory, getCategoryName } from "@/data/categories";
 import { purposes } from "@/data/purposes";
-import { pricingLabels, statusLabels } from "@/lib/labels";
+import {
+  audienceTags,
+  toolTypeTags,
+  pricingTags as pricingTagDefs,
+  statusTags as statusTagDefs,
+} from "@/data/tags";
+import type { TagDef } from "@/types";
 import { siteConfig } from "@/config/site";
-import type { Pricing, ServiceStatus } from "@/types";
 import { RecruitmentStatusField } from "@/components/recruitment/RecruitmentStatusField";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { MiniToolBuilder } from "@/components/minitool/MiniToolBuilder";
@@ -165,47 +170,8 @@ export function SubmitForm() {
         </p>
       </Fieldset>
 
-      <Fieldset legend="分類">
-        <div>
-          <label className="field-label" htmlFor="category">
-            カテゴリ
-          </label>
-          <select id="category" name="category" required className="field-input">
-            <option value="">選択してください</option>
-            {categories.map((c) => (
-              <option key={c.slug} value={c.slug}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <span className="field-label">目的タグ（複数選択可）</span>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {purposes.map((p) => (
-              <CheckOption key={p.slug} name="purposes" value={p.slug} label={p.name} />
-            ))}
-          </div>
-        </div>
-
-        <RadioGroup
-          legend="料金形態"
-          name="pricing"
-          options={(Object.keys(pricingLabels) as Pricing[]).map((p) => ({
-            value: p,
-            label: pricingLabels[p],
-          }))}
-        />
-
-        <RadioGroup
-          legend="運営状況"
-          name="status"
-          options={(Object.keys(statusLabels) as ServiceStatus[]).map((s) => ({
-            value: s,
-            label: statusLabels[s],
-          }))}
-        />
+      <Fieldset legend="分類（カテゴリ・タグ）">
+        <ClassificationFields />
       </Fieldset>
 
       <Fieldset legend="サービス内容（閲覧者向け）">
@@ -247,24 +213,8 @@ export function SubmitForm() {
         <TextareaField label="詳細説明" name="description" required rows={4} />
       </Fieldset>
 
-      <Fieldset legend="分類">
-        <div>
-          <label className="field-label" htmlFor="mt-category">カテゴリ</label>
-          <select id="mt-category" name="category" required className="field-input">
-            <option value="">選択してください</option>
-            {categories.map((c) => (
-              <option key={c.slug} value={c.slug}>{c.name}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <span className="field-label">目的タグ（複数選択可）</span>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {purposes.map((p) => (
-              <CheckOption key={p.slug} name="purposes" value={p.slug} label={p.name} />
-            ))}
-          </div>
-        </div>
+      <Fieldset legend="分類（カテゴリ・タグ）">
+        <ClassificationFields />
         <Field label="サムネイル画像URL（任意）" name="thumbnailUrl" type="url" pattern={IMAGE_URL_PATTERN} title={IMAGE_URL_TITLE} />
       </Fieldset>
 
@@ -292,13 +242,7 @@ export function SubmitForm() {
         <Field label="通常のサービスURL" name="url" type="url" required placeholder="https://..." />
         <TextareaField label="埋め込み希望理由" name="iframeReason" required rows={3} />
         <TextareaField label="サービス説明" name="description" required rows={3} />
-        <div>
-          <label className="field-label" htmlFor="if-category">カテゴリ</label>
-          <select id="if-category" name="category" required className="field-input">
-            <option value="">選択してください</option>
-            {categories.map((c) => (<option key={c.slug} value={c.slug}>{c.name}</option>))}
-          </select>
-        </div>
+        <ClassificationFields minimal />
         <CheckOption name="agreeIframeNote" value="yes" required label="埋め込み表示は運営承認制であり、承認まで表示されないことに同意します。" />
       </Fieldset>
       </>
@@ -316,13 +260,7 @@ export function SubmitForm() {
         <TextareaField label="詳細説明" name="description" required rows={4} />
         <Field label="開発状況" name="devStatus" required placeholder="例：β版テスト中／コア機能実装済み" />
         <Field label="公開予定時期（任意）" name="plannedRelease" placeholder="例：2026年内" />
-        <div>
-          <label className="field-label" htmlFor="dev-category">カテゴリ</label>
-          <select id="dev-category" name="category" required className="field-input">
-            <option value="">選択してください</option>
-            {categories.map((c) => (<option key={c.slug} value={c.slug}>{c.name}</option>))}
-          </select>
-        </div>
+        <ClassificationFields />
         <Field label="スクリーンショット画像URL（任意）" name="thumbnailUrl" type="url" pattern={IMAGE_URL_PATTERN} title={IMAGE_URL_TITLE} />
       </Fieldset>
       </>
@@ -487,32 +425,117 @@ function CheckOption({
   );
 }
 
-function RadioGroup({
-  legend,
+function TagSelect({
+  label,
   name,
   options,
 }: {
-  legend: string;
+  label: string;
   name: string;
-  options: { value: string; label: string }[];
+  options: TagDef[];
 }) {
   return (
     <div>
-      <span className="field-label">{legend}</span>
-      <div className="flex flex-wrap gap-3">
-        {options.map((o) => (
-          <label key={o.value} className="flex items-center gap-1.5 text-sm text-ink-soft">
-            <input
-              type="radio"
-              name={name}
-              value={o.value}
-              required
-              className="h-4 w-4 border-gray-300 text-accent-500 focus:ring-accent-400"
-            />
-            {o.label}
-          </label>
+      <label className="field-label" htmlFor={name}>
+        {label}
+      </label>
+      <select id={name} name={name} className="field-input">
+        <option value="">選択しない</option>
+        {options.map((t) => (
+          <option key={t.slug} value={t.slug}>
+            {t.name}
+          </option>
         ))}
-      </div>
+      </select>
     </div>
+  );
+}
+
+/**
+ * 分類フィールド（大カテゴリ → 詳細カテゴリのカスケード ＋ 各種タグ）。
+ * 投稿者が迷わないよう、大カテゴリを選んだ後に詳細カテゴリが絞り込まれます。
+ * minimal=true のときはカテゴリ＋詳細カテゴリのみ表示します（iframe申請など）。
+ */
+function ClassificationFields({ minimal = false }: { minimal?: boolean }) {
+  const [cat, setCat] = useState("");
+  const subs = cat ? getCategory(cat)?.subCategories ?? [] : [];
+
+  return (
+    <>
+      <div>
+        <label className="field-label" htmlFor="cf-category">
+          大カテゴリ<span className="ml-1 text-rose-500">*</span>
+        </label>
+        <select
+          id="cf-category"
+          name="category"
+          required
+          value={cat}
+          onChange={(e) => setCat(e.target.value)}
+          className="field-input"
+        >
+          <option value="">選択してください</option>
+          {categories.map((c) => (
+            <option key={c.slug} value={c.slug}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="field-label" htmlFor="cf-sub">
+          詳細カテゴリ（任意）
+        </label>
+        <select
+          id="cf-sub"
+          name="subCategory"
+          disabled={subs.length === 0}
+          className="field-input disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-ink-faint"
+        >
+          <option value="">
+            {cat ? "選択してください" : "まず大カテゴリを選択してください"}
+          </option>
+          {subs.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+        {cat && subs.length > 0 && (
+          <p className="mt-1 text-xs text-ink-faint">
+            「{getCategoryName(cat)}」の詳細カテゴリから選べます。
+          </p>
+        )}
+      </div>
+
+      {!minimal && (
+        <>
+          <div>
+            <span className="field-label">目的タグ（複数選択可）</span>
+            <div className="grid max-h-44 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-gray-200 p-3 sm:grid-cols-2">
+              {purposes.map((p) => (
+                <CheckOption key={p.slug} name="purposes" value={p.slug} label={p.name} />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="field-label">利用者別タグ（複数選択可）</span>
+            <div className="grid max-h-44 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-gray-200 p-3 sm:grid-cols-2">
+              {audienceTags.map((t) => (
+                <CheckOption key={t.slug} name="audienceTags" value={t.slug} label={t.name} />
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <TagSelect label="ツール形式タグ" name="toolTypeTag" options={toolTypeTags} />
+            <TagSelect label="料金タグ" name="pricingTag" options={pricingTagDefs} />
+            <TagSelect label="運営状態タグ" name="statusTag" options={statusTagDefs} />
+          </div>
+        </>
+      )}
+    </>
   );
 }

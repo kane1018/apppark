@@ -3,6 +3,7 @@ import { siteConfig } from "@/config/site";
 import { getAllServices } from "@/data/services";
 import { categories } from "@/data/categories";
 import { purposes } from "@/data/purposes";
+import { allTagDefs } from "@/data/tags";
 
 /**
  * sitemap.xml を生成（セクション22）。
@@ -56,10 +57,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
+  const tagEntries: MetadataRoute.Sitemap = allTagDefs.map((t) => ({
+    url: `${base}/tags/${t.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.5,
+  }));
+
   return [
     ...staticEntries,
     ...serviceEntries,
     ...categoryEntries,
     ...purposeEntries,
+    ...tagEntries,
   ];
 }

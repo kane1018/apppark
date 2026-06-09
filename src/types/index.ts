@@ -47,13 +47,22 @@ export type HelpfulRating =
   | "slightly-helpful"
   | "not-helpful";
 
-/** カテゴリ */
+/** カテゴリ（大カテゴリ） */
 export interface Category {
   slug: string;
   name: string;
   description: string;
   /** カードや見出しに表示するアイコン（Lucide。キーは IconName を参照） */
   icon: IconName;
+  /** 詳細カテゴリ（表示名の配列）。カテゴリ一覧・フィルター・投稿フォームで使用 */
+  subCategories?: string[];
+  /** 関連する目的タグ（Purpose.slug の配列）。カテゴリページの回遊導線に使用 */
+  relatedPurposes?: string[];
+  /** トップページの「主要カテゴリ」に含めるか（true のみトップに表示） */
+  isMajor?: boolean;
+  /** SEO上書き（未指定なら name / description から自動生成） */
+  seoTitle?: string;
+  seoDescription?: string;
 }
 
 /** 目的タグ */
@@ -64,6 +73,24 @@ export interface Purpose {
   description: string;
   /** カードや見出しに表示するアイコン（Lucide。キーは IconName を参照） */
   icon: IconName;
+  /** トップページに表示する主要な目的タグか */
+  featured?: boolean;
+}
+
+/** 汎用タグの種類 */
+export type TagGroup = "audience" | "toolType" | "pricing" | "status";
+
+/**
+ * 汎用タグ定義（利用者別タグ・ツール形式タグ・料金タグ・運営状態タグ）。
+ * slug はタグ単独ページ（/tags/[slug]）と検索フィルターに使われます。
+ * slug は全グループ横断で一意にしてください。
+ */
+export interface TagDef {
+  slug: string;
+  name: string;
+  group: TagGroup;
+  /** 一覧やタグページで使う短い説明（任意） */
+  description?: string;
 }
 
 /** 作者SNS等のリンク */
@@ -90,10 +117,24 @@ export interface Service {
   name: string;
   shortDescription: string;
   description: string;
-  /** カテゴリの slug */
+  /** 大カテゴリの slug */
   category: string;
-  /** 目的タグの slug 配列 */
+  /** 詳細カテゴリ（表示名の配列。所属する大カテゴリの subCategories から選ぶ） */
+  subCategories: string[];
+  /** 目的タグの slug 配列（purposeTags） */
   purposes: string[];
+  /** 利用者別タグの slug 配列（TagDef: audience） */
+  audienceTags: string[];
+  /** ツール形式タグの slug 配列（TagDef: toolType） */
+  toolTypeTags: string[];
+  /** 料金タグの slug 配列（TagDef: pricing）。未指定なら pricing から自動導出 */
+  pricingTags: string[];
+  /** 運営状態タグの slug 配列（TagDef: status）。未指定なら status 等から自動導出 */
+  statusTags: string[];
+  /** AI対応サービスか（AI機能を備える／AIで動く）。未指定ならカテゴリ等から自動導出 */
+  isAiEnabled: boolean;
+  /** AppPark内で完結して使えるミニツールか。未指定なら listingType から自動導出 */
+  isInternalMiniTool: boolean;
   /** 自由タグ */
   tags: string[];
   pricing: Pricing;
