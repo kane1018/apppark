@@ -1,179 +1,22 @@
-import type { MiniToolType } from "@/lib/minitool/types";
 import type { Service } from "@/types";
+import { tool } from "@/data/toolFactory";
+import { initialServices } from "@/data/initialServices";
 
 /**
  * 掲載サービスデータ。
  *
  * 公開初期は、AppPark運営が作成した「実際に動くWebツール」を掲載しています
  * （isFirstParty: true、url は AppPark内の /tools/<slug>）。
+ * さらに、各大カテゴリの初期掲載ミニツール（initialServices.ts）を結合しています。
  * 外部の投稿サービスは、掲載申請を運営が確認のうえ追加します（isFirstParty: false）。
  *
+ * Service の組み立ては toolFactory.ts の tool() に集約しています。
  * 後から Supabase / Firebase / Notion / スプレッドシート等に移行する場合も、
  * この Service 型に合わせてデータを返すようにすれば、UIは変更不要です。
  */
 
-/** ミニツールの種類 → ツール形式タグ slug */
-const MINI_TOOL_TYPE_TAG: Record<MiniToolType, string | null> = {
-  diagnosis: "diagnosis",
-  calculator: "calculator",
-  template_generator: "template",
-  checklist: "checklist",
-  text_transform: "text-transform",
-  none: null,
-};
-
-/** 料金（enum）→ 料金タグ slug */
-function derivePricingTags(s: Service): string[] {
-  switch (s.pricing) {
-    case "free":
-      return ["free"];
-    case "paid":
-      return ["paid"];
-    case "freemium":
-      return ["freemium"];
-    default:
-      return [];
-  }
-}
-
-/** 運営状況・属性 → 運営状態タグ slug */
-function deriveStatusTags(s: Service): string[] {
-  const tags = new Set<string>();
-  if (s.listingType === "development") tags.add("developing");
-  else if (s.status === "active") tags.add("published");
-  else if (s.status === "beta") tags.add("beta");
-  else if (s.status === "development") tags.add("developing");
-  else if (s.status === "paused") tags.add("discontinued");
-  tags.add(s.isFirstParty ? "official" : "indie");
-  if (s.isSponsored) tags.add("sponsor");
-  return Array.from(tags);
-}
-
-/** 掲載タイプ・ミニツール種別 → ツール形式タグ slug */
-function deriveToolTypeTags(s: Service): string[] {
-  const tags = new Set<string>();
-  switch (s.listingType) {
-    case "external":
-      tags.add("external");
-      break;
-    case "internal_mini_tool": {
-      tags.add("internal-mini-tool");
-      const mt = MINI_TOOL_TYPE_TAG[s.miniTool.type];
-      if (mt) tags.add(mt);
-      break;
-    }
-    case "iframe_embed":
-      tags.add("iframe");
-      break;
-    case "development":
-      tags.add("dev-service");
-      break;
-  }
-  return Array.from(tags);
-}
-
-/** AI対応かどうかの自動判定 */
-function deriveIsAiEnabled(s: Service): boolean {
-  return (
-    s.category === "ai-tools" ||
-    s.purposes.includes("try-ai") ||
-    s.aiToolsUsed.length > 0 ||
-    s.toolTypeTags.includes("ai-chat")
-  );
-}
-
-function tool(
-  partial: Omit<
-    Service,
-    | "pricing"
-    | "status"
-    | "createdAt"
-    | "updatedAt"
-    | "thumbnailUrl"
-    | "galleryImageUrls"
-    | "imageAlt"
-    | "views"
-    | "clicks"
-    | "helpfulCount"
-    | "authorId"
-    | "publicAuthorName"
-    | "authorName"
-    | "authorLinks"
-    | "aiToolsUsed"
-    | "recruitmentNote"
-    | "isSponsored"
-    | "isFirstParty"
-    | "listingType"
-    | "miniTool"
-    | "iframeEmbed"
-    | "developmentInfo"
-    | "moderationState"
-    | "ctaLabel"
-    | "ctaUrl"
-    | "voices"
-    | "subCategories"
-    | "audienceTags"
-    | "toolTypeTags"
-    | "pricingTags"
-    | "statusTags"
-    | "isAiEnabled"
-    | "isInternalMiniTool"
-  > &
-    Partial<Service>
-): Service {
-  const merged: Service = {
-    pricing: "free",
-    status: "active",
-    createdAt: "2026-06-09",
-    updatedAt: "2026-06-09",
-    thumbnailUrl: null,
-    galleryImageUrls: [],
-    imageAlt: null,
-    views: 0,
-    clicks: 0,
-    helpfulCount: 0,
-    authorId: "apppark-official",
-    publicAuthorName: "AppPark運営",
-    authorName: "AppPark運営",
-    authorLinks: [],
-    aiToolsUsed: [],
-    recruitmentNote: null,
-    isSponsored: false,
-    isFirstParty: true,
-    listingType: "internal_mini_tool",
-    miniTool: { enabled: false, type: "none", config: null },
-    iframeEmbed: { requested: false, url: null, approved: false },
-    developmentInfo: { enabled: false, status: null, plannedRelease: null },
-    moderationState: "published",
-    ctaLabel: null,
-    ctaUrl: null,
-    voices: [],
-    subCategories: [],
-    audienceTags: [],
-    toolTypeTags: [],
-    pricingTags: [],
-    statusTags: [],
-    isAiEnabled: false,
-    isInternalMiniTool: false,
-    ...partial,
-  } as Service;
-
-  // 未指定のタグ・フラグは他のフィールドから自動導出（指定があれば尊重）
-  if (merged.toolTypeTags.length === 0)
-    merged.toolTypeTags = deriveToolTypeTags(merged);
-  if (merged.pricingTags.length === 0)
-    merged.pricingTags = derivePricingTags(merged);
-  if (merged.statusTags.length === 0)
-    merged.statusTags = deriveStatusTags(merged);
-  if (partial.isInternalMiniTool === undefined)
-    merged.isInternalMiniTool = merged.listingType === "internal_mini_tool";
-  if (partial.isAiEnabled === undefined)
-    merged.isAiEnabled = deriveIsAiEnabled(merged);
-
-  return merged;
-}
-
-export const services: Service[] = [
+/** AppPark運営が作成した、実際に動くWebツール（/tools/<slug> や config ミニツール） */
+const coreServices: Service[] = [
   tool({
     id: "tool-char-count",
     slug: "char-count",
@@ -612,6 +455,12 @@ export const services: Service[] = [
     recruitmentStatus: ["seeking_feedback"],
   }),
 ];
+
+/**
+ * 公開する全サービス＝運営の実動ツール＋各大カテゴリの初期掲載ミニツール。
+ * これがサイト全体のデータソースです。
+ */
+export const services: Service[] = [...coreServices, ...initialServices];
 
 /* ------------------------------------------------------------------
  * データ取得ヘルパー（後で DB 接続に置き換えやすいよう関数化）

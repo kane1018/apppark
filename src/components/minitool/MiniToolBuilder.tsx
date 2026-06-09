@@ -7,6 +7,7 @@ import type {
   DiagnosisConfig,
   MiniToolConfig,
   MiniToolType,
+  RandomConfig,
   TemplateConfig,
   TextTransformConfig,
   TransformOp,
@@ -62,6 +63,12 @@ function starterConfig(type: Exclude<MiniToolType, "none">): MiniToolConfig {
       return { items: [{ id: "c1", label: "確認項目1" }] } as ChecklistConfig;
     case "text_transform":
       return { operations: ["trim_lines", "remove_blank_lines"] } as TextTransformConfig;
+    case "random":
+      return {
+        categories: [
+          { id: "c1", label: "カテゴリ1", items: ["お題A", "お題B", "お題C"] },
+        ],
+      } as RandomConfig;
   }
 }
 

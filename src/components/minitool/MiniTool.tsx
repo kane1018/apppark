@@ -6,6 +6,7 @@ import type {
   DiagnosisConfig,
   MiniToolConfig,
   MiniToolType,
+  RandomConfig,
   TemplateConfig,
   TextTransformConfig,
 } from "@/lib/minitool/types";
@@ -14,6 +15,7 @@ import { CalculatorTool } from "@/components/minitool/CalculatorTool";
 import { TemplateTool } from "@/components/minitool/TemplateTool";
 import { ChecklistTool } from "@/components/minitool/ChecklistTool";
 import { TextTransformTool } from "@/components/minitool/TextTransformTool";
+import { RandomTool } from "@/components/minitool/RandomTool";
 
 /**
  * AppPark内ミニツールの描画ディスパッチャ。
@@ -42,6 +44,8 @@ export function MiniTool({
       return <ChecklistTool config={config as ChecklistConfig} storageKey={storageKey} />;
     case "text_transform":
       return <TextTransformTool config={config as TextTransformConfig} />;
+    case "random":
+      return <RandomTool config={config as RandomConfig} />;
     default:
       return null;
   }

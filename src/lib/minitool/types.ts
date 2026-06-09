@@ -9,6 +9,7 @@ export type MiniToolType =
   | "template_generator" // テンプレート生成
   | "checklist" // チェックリスト
   | "text_transform" // 文章変換・整形
+  | "random" // ランダム生成（お題・ネタ）
   | "none"; // ミニツールなし（外部/開発中など）
 
 /* ---------------- A. 診断 ---------------- */
@@ -99,12 +100,25 @@ export interface TextTransformConfig {
   note?: string;
 }
 
+/* ---------------- F. ランダム生成 ---------------- */
+export interface RandomCategory {
+  id: string;
+  label: string;
+  /** このカテゴリのお題・候補（この中からランダムに1つ表示） */
+  items: string[];
+}
+export interface RandomConfig {
+  categories: RandomCategory[];
+  note?: string;
+}
+
 export type MiniToolConfig =
   | DiagnosisConfig
   | CalculatorConfig
   | TemplateConfig
   | ChecklistConfig
-  | TextTransformConfig;
+  | TextTransformConfig
+  | RandomConfig;
 
 export interface MiniTool {
   enabled: boolean;
@@ -128,4 +142,5 @@ export const miniToolTypeLabels: Record<Exclude<MiniToolType, "none">, string> =
   template_generator: "テンプレート生成ツール",
   checklist: "チェックリストツール",
   text_transform: "文章変換・整形ツール",
+  random: "ランダム生成ツール",
 };
