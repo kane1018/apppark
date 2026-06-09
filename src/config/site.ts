@@ -56,9 +56,10 @@ export const siteConfig = {
 
   /** トップページのメインコピー（= キャッチコピー）／サブコピー／補足 */
   heroTitle: "こんなの欲しかった、が見つかる。",
-  heroSubtitle: "面白いWebサービス・便利ツールを探せるサイト。",
+  heroSubtitle:
+    "AIツール、便利なWebサービス、個人開発のミニツールを、目的別・カテゴリ別に探せるサイトです。",
   heroLead:
-    "AIツール、業務効率化、画像・動画、学習、生活便利、個人開発サービスまで。目的やカテゴリから、今すぐ使えるWebツールを探せます。",
+    "外部サイトへ移動して使うサービスだけでなく、AppParkのページ内でそのまま使えるミニツールも掲載しています。",
 
   /** title 用のフレーズ（句点なし）。ホームの title は「サービス名｜この文」になります */
   titleTagline: "面白いWebサービス・便利ツールを探せるサイト",
@@ -132,10 +133,11 @@ export const siteConfig = {
 
 /** 主要ナビゲーション（ヘッダー） */
 export const mainNav = [
-  { label: "サービスを探す", href: "/services" },
+  { label: "探す", href: "/services" },
   { label: "カテゴリ", href: "/categories" },
-  { label: "AppPark内ミニツール", href: "/services?internal=1" },
-  { label: "アイデア掲示板", href: "/ideas" },
+  { label: "ミニツール", href: "/services?internal=1" },
+  { label: "アイデア", href: "/ideas" },
+  { label: "掲載する", href: "/submit" },
 ] as const;
 
 /** ヘッダー内の補助導線（投稿者・スポンサー向け。目立たせすぎない） */

@@ -10,25 +10,24 @@ import { Thumbnail } from "@/components/Thumbnail";
 import { RecruitmentStatusBadges } from "@/components/recruitment/RecruitmentStatusBadges";
 
 /**
- * サービスカード。閲覧者が一目で判断できる情報を表示。
- * - 運営作成ツールは「運営作成」を明示し、「使ってみる」で内部ツールへ
- * - 外部サービスは「サービスを見る ↗」で別タブへ
+ * サービスカード。閲覧者が一目で判断できる最小限の情報を表示。
+ * - AppPark内で使えるミニツールは「AppPark内で使える」を明示し、「使ってみる」へ
+ * - 外部サービスは「外部サービス」を示し、「サービスを見る ↗」で別タブへ
  * - スポンサーは必ずラベルを明示
+ * - タグは詰め込まない：目的タグ最大2・ツール形式タグ最大1・募集ステータス最大1
  */
 export function ServiceCard({ service }: { service: Service }) {
   const configTool = isConfigMiniTool(service);
   const internalRoute = !configTool && isInternalToolUrl(service.url);
+  const inPage = configTool || internalRoute;
   const isDev = service.listingType === "development";
+  const isExternal = !inPage && !isDev;
 
-  // カードに出す補助タグ（ツール形式＋利用者）。バッジで表す形式は重複を避けて除外。
-  const cardTags = [
-    ...service.toolTypeTags.filter(
-      (t) => t !== "internal-mini-tool" && t !== "external"
-    ),
-    ...service.audienceTags,
-  ]
+  // ツール形式タグ最大1個（汎用バッジで表す形式は重複を避けて除外）
+  const toolTypeTag = service.toolTypeTags
+    .filter((t) => !["internal-mini-tool", "external", "dev-service", "iframe"].includes(t))
     .map((slug) => getTagDef(slug))
-    .filter((t): t is NonNullable<typeof t> => Boolean(t));
+    .find((t): t is NonNullable<typeof t> => Boolean(t));
 
   return (
     <article className="card group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-card-hover">
@@ -38,11 +37,6 @@ export function ServiceCard({ service }: { service: Service }) {
         </Link>
         <div className="absolute left-2 top-2 flex gap-1.5">
           {service.isSponsored && <SponsorTag label={service.sponsorLabel ?? "PR"} />}
-          {service.isFirstParty && (
-            <span className="rounded-md bg-brand-900/70 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur">
-              運営作成
-            </span>
-          )}
         </div>
       </div>
 
@@ -50,14 +44,19 @@ export function ServiceCard({ service }: { service: Service }) {
         <div className="flex flex-wrap items-center gap-1.5">
           <PricingBadge pricing={service.pricing} />
           <StatusBadge status={service.status} />
-          {configTool && (
+          {inPage && (
             <span className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-bold text-teal-700 ring-1 ring-inset ring-teal-600/20">
-              ページ内ツール
+              AppPark内で使える
             </span>
           )}
           {isDev && (
             <span className="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-0.5 text-xs font-bold text-violet-700 ring-1 ring-inset ring-violet-600/20">
               開発中
+            </span>
+          )}
+          {isExternal && (
+            <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-ink-soft">
+              外部サービス
             </span>
           )}
           <Link
@@ -79,8 +78,9 @@ export function ServiceCard({ service }: { service: Service }) {
           </p>
         </div>
 
-        {service.purposes.length > 0 && (
-          <ul className="flex flex-wrap gap-1">
+        {/* 主要目的タグ最大2 ＋ ツール形式タグ最大1 */}
+        {(service.purposes.length > 0 || toolTypeTag) && (
+          <ul className="flex flex-wrap items-center gap-1">
             {service.purposes.slice(0, 2).map((p) => (
               <li key={p}>
                 <Link
@@ -91,31 +91,17 @@ export function ServiceCard({ service }: { service: Service }) {
                 </Link>
               </li>
             ))}
-          </ul>
-        )}
-
-        {/* ツール形式・利用者タグ（最大3件、超過は「ほか◯件」） */}
-        {cardTags.length > 0 && (
-          <ul className="flex flex-wrap items-center gap-1">
-            {cardTags.slice(0, 3).map((t) => (
-              <li
-                key={t.slug}
-                className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-ink-soft"
-              >
-                {t.name}
-              </li>
-            ))}
-            {cardTags.length > 3 && (
-              <li className="text-[11px] font-medium text-ink-faint">
-                ほか{cardTags.length - 3}件
+            {toolTypeTag && (
+              <li className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-ink-soft">
+                {toolTypeTag.name}
               </li>
             )}
           </ul>
         )}
 
-        {/* 募集・相談ステータス（最大3件、超過は「ほか◯件」） */}
+        {/* 募集・相談ステータス（最大1件、超過は「ほか◯件」） */}
         {service.recruitmentStatus.length > 0 && (
-          <RecruitmentStatusBadges statuses={service.recruitmentStatus} max={3} />
+          <RecruitmentStatusBadges statuses={service.recruitmentStatus} max={1} />
         )}
 
         <div className="mt-auto space-y-3 pt-1">

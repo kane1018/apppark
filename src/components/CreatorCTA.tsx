@@ -22,15 +22,21 @@ export function CreatorCTA() {
               Webサービスを作った方へ
             </p>
             <h2 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">
-              あなたのWebサービス専用の紹介ページを作成できます。
+              作ったサービスを、必要な人へ届けよう。
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-white/80">
-              {siteConfig.name}では、個人開発・AIツール・便利なWebサービスの掲載申請を受け付けています。掲載されたサービスは、カテゴリ・目的別ページに表示され、公式サイトやSNSへ誘導できます。利用者コメント、改善要望、バグ報告、共同開発者募集、スポンサー募集、譲渡・購入相談ステータスにも対応しています。
+              {siteConfig.name}では、個人開発サービス、AIツール、便利なWebサービスの掲載申請を受け付けています。公開済みURLがあるサービスは紹介ページとして掲載でき、公開URLがない小さなアイデアは、AppPark内ミニツールとして作成・掲載できます。
             </p>
-            <p className="mt-3 rounded-lg bg-white/10 px-3 py-2 text-xs leading-relaxed text-white/90">
-              <span className="font-bold text-white">作れる時代から、届けられる時代へ。</span>
-              AIによって、Webサービスや便利ツールは個人でも作れる時代になりました。{siteConfig.name}は、作ったサービスを必要としている人へ届けるための場所です。
-            </p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <div className="rounded-lg bg-white/10 px-3 py-2.5 text-xs leading-relaxed text-white/90">
+                <span className="block font-bold text-white">① すでに公開しているサービスを掲載</span>
+                公開URLを紹介ページとして掲載できます。
+              </div>
+              <div className="rounded-lg bg-white/10 px-3 py-2.5 text-xs leading-relaxed text-white/90">
+                <span className="block font-bold text-white">② 公開URLがない場合</span>
+                AppPark内ミニツールとして作成・掲載できます。
+              </div>
+            </div>
           </div>
 
           <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">

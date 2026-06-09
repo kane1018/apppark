@@ -50,12 +50,6 @@ export function Header() {
 
         {/* 右側：ログイン状態 */}
         <div className="hidden items-center gap-2 md:flex">
-          <Link
-            href="/submit"
-            className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-ink-faint transition hover:text-brand-700"
-          >
-            掲載申請
-          </Link>
           {!loading &&
             (user ? (
               <>
