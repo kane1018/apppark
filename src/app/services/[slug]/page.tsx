@@ -13,6 +13,8 @@ import { getPurposeName } from "@/data/purposes";
 import { getTagDef } from "@/data/tags";
 import { getSeedIdeaById } from "@/data/ideas";
 import { getSimilarServices } from "@/lib/filters";
+import { resolvePublicAuthor } from "@/lib/authors";
+import { Avatar } from "@/components/Avatar";
 import { formatDate } from "@/lib/labels";
 import { buildMetadata, breadcrumbJsonLd, softwareApplicationJsonLd } from "@/lib/seo";
 import {
@@ -107,6 +109,7 @@ export default function ServiceDetailPage({
 
   const faqItems = serviceFaq(service);
   const showCaution = needsProfessionalCaution(service.category, service.subCategories);
+  const author = resolvePublicAuthor(service.authorId, service.publicAuthorName);
 
   return (
     <div className="container-content py-8">
@@ -511,11 +514,28 @@ export default function ServiceDetailPage({
           <SimilarServices services={similar} />
         </DetailBlock>
 
-        {/* 11. 作者情報 */}
-        <DetailBlock title="作者情報">
+        {/* 11. 投稿者 */}
+        <DetailBlock title="投稿者">
           <div className="card p-5">
-            <p className="text-sm font-bold text-brand-900">{service.authorName}</p>
-            <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            <div className="flex items-center gap-3">
+              <Avatar name={author.nickname} avatarUrl={author.avatarUrl} size="md" />
+              <div className="min-w-0">
+                <Link
+                  href={`/users/${author.slug}`}
+                  className="text-base font-bold text-brand-900 underline-offset-2 hover:text-brand-600 hover:underline"
+                >
+                  {author.nickname}
+                </Link>
+                <p className="text-xs text-ink-faint">投稿者</p>
+              </div>
+              <Link
+                href={`/users/${author.slug}`}
+                className="ml-auto shrink-0 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-bold text-brand-700 transition hover:border-brand-400 hover:bg-brand-50"
+              >
+                この投稿者の他のサービス →
+              </Link>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-ink-soft">
               {service.authorComment}
             </p>
 

@@ -8,7 +8,7 @@ import { tool } from "@/data/toolFactory";
  * 実行しません）。デモ・サンプル・テストではなく、そのまま使える掲載ツールです。
  *
  * 投稿者は「運営作成」ではなく、サイトオーナー本人の通常投稿として扱います
- * （公開表示名：siteConfig.owner.displayName ＝「Kansui」、createdBy: "user"、
+ * （公開表示名：siteConfig.owner.displayName ＝「kane」、createdBy: "user"、
  * isFirstParty: false。これらは toolFactory.ts のデフォルトで設定されます）。
  * 公開するのは公開表示名のみで、メール・連絡先・管理情報は公開しません。
  * 架空のレビュー・閲覧数・クリック数は持たせません（views/clicks/helpful は 0 のまま、

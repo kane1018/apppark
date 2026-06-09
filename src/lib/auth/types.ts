@@ -3,8 +3,10 @@ export type UserRole = "user" | "maker" | "admin";
 
 export interface AppUser {
   id: string;
-  /** ログイン情報／連絡用。公開しません。 */
+  /** ログイン情報／連絡用。公開しません（本人マイページのみ表示）。 */
   email: string;
+  /** 公開ニックネーム。未設定なら displayName を使います。 */
+  nickname?: string;
   /** 公開表示名（AppPark上に表示される名前。ニックネーム可・必須） */
   displayName: string;
   /** プロフィール画像URL（任意・公開可） */

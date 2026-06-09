@@ -5,8 +5,10 @@ import { getPurposeName } from "@/data/purposes";
 import { getTagDef } from "@/data/tags";
 import { formatDate } from "@/lib/labels";
 import { isInternalToolUrl, isConfigMiniTool } from "@/data/services";
+import { resolvePublicAuthor } from "@/lib/authors";
 import { PricingBadge, SponsorTag, StatusBadge } from "@/components/badges";
 import { Thumbnail } from "@/components/Thumbnail";
+import { Avatar } from "@/components/Avatar";
 import { RecruitmentStatusBadges } from "@/components/recruitment/RecruitmentStatusBadges";
 
 /**
@@ -28,6 +30,8 @@ export function ServiceCard({ service }: { service: Service }) {
     .filter((t) => !["internal-mini-tool", "external", "dev-service", "iframe"].includes(t))
     .map((slug) => getTagDef(slug))
     .find((t): t is NonNullable<typeof t> => Boolean(t));
+
+  const author = resolvePublicAuthor(service.authorId, service.publicAuthorName);
 
   return (
     <article className="card group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-card-hover">
@@ -105,7 +109,19 @@ export function ServiceCard({ service }: { service: Service }) {
         )}
 
         <div className="mt-auto space-y-3 pt-1">
-          <p className="text-[11px] text-ink-faint">更新日：{formatDate(service.updatedAt)}</p>
+          {/* 投稿者（アイコン＋ニックネーム。クリックでプロフィールへ） */}
+          <div className="flex items-center justify-between gap-2">
+            <Link
+              href={`/users/${author.slug}`}
+              className="group/author inline-flex items-center gap-1.5 text-ink-faint transition hover:text-brand-700"
+            >
+              <Avatar name={author.nickname} avatarUrl={author.avatarUrl} size="sm" />
+              <span className="text-xs font-semibold group-hover/author:underline">
+                {author.nickname}
+              </span>
+            </Link>
+            <p className="text-[11px] text-ink-faint">更新日：{formatDate(service.updatedAt)}</p>
+          </div>
 
           <div className="flex gap-2">
             <Link

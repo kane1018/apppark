@@ -121,13 +121,19 @@ export const siteConfig = {
 
   /**
    * サイトの初期掲載サービスの投稿者（サイトオーナー本人）。
-   * 初期掲載サービスは「運営作成」ではなく、この公開表示名による通常投稿として表示します。
-   * 公開するのは displayName（公開表示名）のみ。メール・連絡先・管理情報は公開しません。
-   * authorId は投稿の紐付けキー（マイページの「自分の投稿」判定にも使用）。
+   * 初期掲載サービスは「運営作成」ではなく、この実アカウントによる通常投稿として扱います。
+   *
+   * 公開してよいのは nickname / displayName / avatarUrl のみ。
+   * email（連絡用・管理用）は公開ページに一切表示しません（本人マイページのみ表示可）。
+   * authorId は投稿の紐付けキー、email はログイン本人の判定キーとして使います。
    */
   owner: {
     authorId: "kansui",
-    displayName: "Kansui",
+    nickname: "kane",
+    displayName: "kane",
+    avatarUrl: null as string | null,
+    /** 非公開（管理・連絡用）。公開ページには出さない。 */
+    email: "kansuinaoi@gmail.com",
   },
 } as const;
 

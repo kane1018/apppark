@@ -5,6 +5,7 @@ import { categories } from "@/data/categories";
 import { purposes } from "@/data/purposes";
 import { allTagDefs } from "@/data/tags";
 import { seedIdeas } from "@/data/ideas";
+import { resolvePublicAuthor } from "@/lib/authors";
 
 /**
  * sitemap.xml を生成（セクション22）。
@@ -73,6 +74,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
+  // 投稿者プロフィールページ（公開）
+  const authorSlugs = Array.from(
+    new Set(
+      getAllServices().map(
+        (s) => resolvePublicAuthor(s.authorId, s.publicAuthorName).slug
+      )
+    )
+  );
+  const userEntries: MetadataRoute.Sitemap = authorSlugs.map((slug) => ({
+    url: `${base}/users/${slug}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.5,
+  }));
+
   return [
     ...staticEntries,
     ...serviceEntries,
@@ -80,5 +96,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...purposeEntries,
     ...tagEntries,
     ...ideaEntries,
+    ...userEntries,
   ];
 }

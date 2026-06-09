@@ -11,6 +11,7 @@ import {
 import type { User as SupaUser } from "@supabase/supabase-js";
 import type { AppUser, UserRole } from "@/lib/auth/types";
 import { getSupabase, isSupabaseEnabled } from "@/lib/auth/supabase";
+import { siteConfig } from "@/config/site";
 
 const LOCAL_KEY = "apppark.auth.user";
 
@@ -40,18 +41,31 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/** サイトオーナー本人（kansuinaoi@gmail.com）か */
+function isOwnerEmail(email: string): boolean {
+  return (
+    !!email &&
+    email.trim().toLowerCase() === siteConfig.owner.email.trim().toLowerCase()
+  );
+}
+
 function mapSupaUser(u: SupaUser): AppUser {
   const meta = (u.user_metadata ?? {}) as Record<string, unknown>;
   const app = (u.app_metadata ?? {}) as Record<string, unknown>;
   const role = (app.role || meta.role || "user") as UserRole;
-  return {
-    id: u.id,
-    email: u.email ?? "",
-    displayName:
-      (meta.display_name as string) ||
+  const owner = isOwnerEmail(u.email ?? "");
+  const displayName = owner
+    ? siteConfig.owner.displayName
+    : (meta.display_name as string) ||
       (meta.full_name as string) ||
-      (u.email ? u.email.split("@")[0] : "ユーザー"),
-    avatarUrl: (meta.avatar_url as string) ?? null,
+      (u.email ? u.email.split("@")[0] : "ユーザー");
+  return {
+    // オーナー本人は初期掲載と同じ authorId に紐付け（マイページで自分の投稿として表示）
+    id: owner ? siteConfig.owner.authorId : u.id,
+    email: u.email ?? "",
+    nickname: owner ? siteConfig.owner.nickname : (meta.nickname as string) || displayName,
+    displayName,
+    avatarUrl: (meta.avatar_url as string) ?? siteConfig.owner.avatarUrl ?? null,
     contactName: (meta.contact_name as string) ?? null,
     role,
     createdAt: u.created_at ?? new Date().toISOString(),
@@ -168,11 +182,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail))
         return { ok: false, message: "メールアドレスを正しく入力してください。" };
       const now = new Date().toISOString();
+      const owner = isOwnerEmail(mail);
       const u: AppUser = {
-        id: `local-${btoa(unescape(encodeURIComponent(mail))).replace(/=/g, "").slice(0, 16)}`,
+        // オーナー本人は初期掲載と同じ authorId・公開表示名（kane）に紐付け
+        id: owner
+          ? siteConfig.owner.authorId
+          : `local-${btoa(unescape(encodeURIComponent(mail))).replace(/=/g, "").slice(0, 16)}`,
         email: mail,
-        displayName: name,
-        avatarUrl: null,
+        nickname: owner ? siteConfig.owner.nickname : name,
+        displayName: owner ? siteConfig.owner.displayName : name,
+        avatarUrl: owner ? siteConfig.owner.avatarUrl : null,
         contactName: null,
         role: "user",
         createdAt: now,

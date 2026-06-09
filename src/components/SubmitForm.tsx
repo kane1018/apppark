@@ -14,6 +14,7 @@ import type { TagDef } from "@/types";
 import { siteConfig } from "@/config/site";
 import { RecruitmentStatusField } from "@/components/recruitment/RecruitmentStatusField";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { Avatar } from "@/components/Avatar";
 import { MiniToolBuilder } from "@/components/minitool/MiniToolBuilder";
 
 /**
@@ -92,15 +93,24 @@ export function SubmitForm({ ideaId = null }: { ideaId?: string | null }) {
         {/* 公開表示名・メールはログイン情報から。サービスにはこの公開表示名が紐づきます */}
         <input type="hidden" name="authorId" value={user?.id ?? ""} />
         <input type="hidden" name="publicAuthorName" value={user?.displayName ?? ""} />
-        <div className="rounded-xl bg-gray-50 px-4 py-3 text-sm">
-          <p>
-            公開表示名：<span className="font-bold text-ink">{user?.displayName}</span>
-            <Link href="/mypage" className="ml-2 text-xs font-semibold text-brand-600 underline-offset-2 hover:underline">
-              変更
-            </Link>
-          </p>
-          <p className="mt-1 text-xs text-ink-faint">
-            メールアドレスはログイン情報を使用します（公開されません）。掲載時はこの公開表示名が投稿者として表示されます。
+        <div className="rounded-xl bg-gray-50 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <Avatar name={user?.nickname || user?.displayName || "ユーザー"} avatarUrl={user?.avatarUrl ?? null} size="md" />
+            <div className="min-w-0 text-sm">
+              <p>
+                投稿者として表示される名前：
+                <span className="font-bold text-ink">{user?.nickname || user?.displayName}</span>
+                <Link href="/mypage" className="ml-2 text-xs font-semibold text-brand-600 underline-offset-2 hover:underline">
+                  変更
+                </Link>
+              </p>
+              <p className="mt-0.5 text-xs text-ink-soft">
+                連絡用メールアドレス：<span className="font-semibold">{user?.email}</span>
+              </p>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-ink-faint">
+            メールアドレスは運営確認用であり、公開されません。掲載時は、投稿者名（公開ニックネーム）とアイコンのみが表示されます。
           </p>
         </div>
         <Field

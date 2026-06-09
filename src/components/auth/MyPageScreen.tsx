@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { services } from "@/data/services";
 import { siteConfig } from "@/config/site";
+import { Avatar } from "@/components/Avatar";
 import { OwnerServiceList } from "@/components/auth/OwnerServiceList";
 import { IdeaProvider } from "@/components/ideas/IdeaProvider";
 import { MyIdeasSection } from "@/components/ideas/MyIdeasSection";
@@ -34,13 +35,16 @@ export function MyPageScreen() {
     return <div className="container-content py-16 text-center text-sm text-ink-faint">読み込み中…</div>;
   }
 
-  // 自分の投稿：ユーザーIDが一致するもの＋サイトオーナー本人（公開表示名が一致）の初期掲載
-  const isOwner = user.displayName === siteConfig.owner.displayName;
+  // 自分の投稿：ユーザーIDが一致するもの＋サイトオーナー本人（メール/IDが一致）の初期掲載
+  const isOwner =
+    user.id === siteConfig.owner.authorId ||
+    user.email.trim().toLowerCase() === siteConfig.owner.email.trim().toLowerCase();
   const myServices = services.filter(
     (s) =>
       s.authorId === user.id ||
       (isOwner && s.authorId === siteConfig.owner.authorId)
   );
+  const nickname = user.nickname || user.displayName;
   const isAdmin = user.role === "admin";
   const ideaBornServices = myServices.filter((s) => s.relatedIdeaId !== null);
 
@@ -68,7 +72,23 @@ export function MyPageScreen() {
         {/* プロフィール編集 */}
         <section className="card p-5 sm:p-6">
           <h2 className="text-base font-bold text-brand-800">プロフィール</h2>
-          <form onSubmit={save} className="mt-4 space-y-4">
+
+          {/* アイコン＋ニックネーム（公開される情報） */}
+          <div className="mt-4 flex items-center gap-3">
+            <Avatar name={nickname} avatarUrl={user.avatarUrl} size="lg" />
+            <div className="min-w-0">
+              <p className="text-lg font-black text-brand-900">{nickname}</p>
+              <p className="text-xs text-ink-faint">公開ニックネーム（公開ページに表示されます）</p>
+              <Link
+                href={`/users/${encodeURIComponent(nickname)}`}
+                className="mt-1 inline-block text-xs font-semibold text-brand-600 underline-offset-2 hover:underline"
+              >
+                公開プロフィールを見る →
+              </Link>
+            </div>
+          </div>
+
+          <form onSubmit={save} className="mt-5 space-y-4">
             <div>
               <label className="field-label" htmlFor="dn">
                 公開表示名（必須・AppPark上に表示されます）
