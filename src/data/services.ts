@@ -1,6 +1,7 @@
 import type { Service } from "@/types";
 import { tool } from "@/data/toolFactory";
 import { initialServices } from "@/data/initialServices";
+import { ownerApps } from "@/data/ownerApps";
 
 /**
  * 掲載サービスデータ。
@@ -467,10 +468,14 @@ const coreServices: Service[] = [
 ];
 
 /**
- * 公開する全サービス＝運営の実動ツール＋各大カテゴリの初期掲載ミニツール。
+ * 公開する全サービス＝実動ツール＋各大カテゴリの初期掲載ミニツール＋オーナーの外部アプリ。
  * これがサイト全体のデータソースです。
  */
-export const services: Service[] = [...coreServices, ...initialServices];
+export const services: Service[] = [
+  ...coreServices,
+  ...initialServices,
+  ...ownerApps,
+];
 
 /* ------------------------------------------------------------------
  * データ取得ヘルパー（後で DB 接続に置き換えやすいよう関数化）
