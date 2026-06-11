@@ -34,7 +34,7 @@ type ListingTypeChoice = "external" | "internal_mini_tool" | "iframe_embed" | "d
 
 const LISTING_TYPE_OPTIONS: { value: ListingTypeChoice; label: string; desc: string }[] = [
   { value: "external", label: "外部サービスを掲載する", desc: "すでに公開しているWebサービス・AIツールのURLを掲載" },
-  { value: "internal_mini_tool", label: "AppPark内ミニツールを作成する", desc: "公開URLがなくても、AppPark上で使える小さなツールを作成" },
+  { value: "internal_mini_tool", label: "ノーコードでミニツールを作成する", desc: "コード不要。フォーム入力だけで、AppPark上で使えるツールを作成" },
   { value: "iframe_embed", label: "iframe埋め込みを希望する", desc: "外部URLをAppPark内に埋め込みたい（運営承認制）" },
   { value: "development", label: "開発中サービスとして紹介する", desc: "まだ正式公開していないサービスを紹介" },
 ];

@@ -25,7 +25,7 @@ export function CreatorCTA() {
               作ったサービスを、必要な人へ届けよう。
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-white/80">
-              {siteConfig.name}では、個人開発サービス、AIツール、便利なWebサービスの掲載申請を受け付けています。公開済みURLがあるサービスは紹介ページとして掲載でき、公開URLがない小さなアイデアは、AppPark内ミニツールとして作成・掲載できます。
+              {siteConfig.name}では、個人開発サービス、AIツール、便利なWebサービスの掲載申請を受け付けています。公開済みURLがあるサービスは紹介ページとして掲載でき、公開URLがないアイデアは、コードを書かずに（ノーコードで）ミニツールとして作成・掲載できます。
             </p>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
               <div className="rounded-lg bg-white/10 px-3 py-2.5 text-xs leading-relaxed text-white/90">
@@ -33,8 +33,8 @@ export function CreatorCTA() {
                 公開URLを紹介ページとして掲載できます。
               </div>
               <div className="rounded-lg bg-white/10 px-3 py-2.5 text-xs leading-relaxed text-white/90">
-                <span className="block font-bold text-white">② 公開URLがない場合</span>
-                AppPark内ミニツールとして作成・掲載できます。
+                <span className="block font-bold text-white">② コードを書けない・公開URLがない場合</span>
+                ノーコード（フォーム入力だけ）でミニツールを作成・掲載できます。
               </div>
             </div>
           </div>

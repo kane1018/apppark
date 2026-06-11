@@ -51,10 +51,10 @@ const hubCards: {
     href: "/services?internal=1",
   },
   {
-    icon: "pen-line",
-    title: "自分のツールを掲載する",
-    desc: "個人開発サービスやAIツールを掲載できます。公開URLがない場合も、テンプレート型ミニツールとして投稿できます。",
-    cta: "掲載申請する",
+    icon: "sparkles",
+    title: "ノーコードでツールを作る",
+    desc: "コードを書けなくてもOK。診断・計算・テンプレート生成などのミニツールを、フォーム入力だけで作成・公開できます。公開済みサービスの掲載申請もこちら。",
+    cta: "ミニツールを作る",
     href: "/submit",
   },
   {
@@ -82,7 +82,7 @@ export default function HomePage() {
         <div className="pointer-events-none absolute inset-0 opacity-30 [background:radial-gradient(60%_50%_at_50%_0%,rgba(249,127,18,0.25),transparent_70%)]" />
         <div className="container-content relative py-14 sm:py-20">
           <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90 ring-1 ring-inset ring-white/15">
-            AIツール・便利なWebサービス・AppPark内ミニツールのカタログ
+            探せる・使える・ノーコードで作れる、Webツールのカタログ
           </p>
           <h1 className="max-w-3xl text-3xl font-black leading-tight sm:text-5xl">
             {siteConfig.heroTitle}
