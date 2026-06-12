@@ -24,7 +24,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="mt-3 text-xs leading-relaxed text-ink-faint">
-              面白い・便利なWebサービスを目的別／カテゴリ別に探せる、ユーザー投稿型の発見サイトです。
+              面白い・便利なWebサービスを探せて、ノーコードで自分のミニツールも作れる、ユーザー投稿型の発見サイトです。
             </p>
           </div>
 

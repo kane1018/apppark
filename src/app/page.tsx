@@ -12,7 +12,7 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { CTASection } from "@/components/CTASection";
 import { CreatorCTA } from "@/components/CreatorCTA";
 import { MiniToolPromo } from "@/components/MiniToolPromo";
-import { IconBadge, type IconName } from "@/components/icons";
+import { IconBadge, IconGlyph, type IconName } from "@/components/icons";
 
 // 今すぐ使えるツール：AppPark内ミニツール中心（最大6件）
 const internalTools = services.filter((s) => s.isInternalMiniTool);
@@ -53,17 +53,25 @@ const hubCards: {
   {
     icon: "sparkles",
     title: "ノーコードでツールを作る",
-    desc: "コードを書けなくてもOK。診断・計算・テンプレート生成などのミニツールを、フォーム入力だけで作成・公開できます。公開済みサービスの掲載申請もこちら。",
+    desc: "コードを書けなくてもOK。診断・計算・テンプレートなどのミニツールを、フォーム入力だけで作成・公開できます。",
     cta: "ミニツールを作る",
     href: "/submit",
   },
   {
-    icon: "sparkles",
+    icon: "lightbulb",
     title: "アイデアを投稿する",
     desc: "「こんなツールが欲しい」というアイデアを投稿できます。個人開発者が作るヒントになります。",
     cta: "アイデアを見る",
     href: "/ideas",
   },
+];
+
+/** ヒーロー右側の装飾：ノーコードで作れるミニツールの例 */
+const heroToolChips: { icon: IconName; label: string }[] = [
+  { icon: "sparkles", label: "診断ツール" },
+  { icon: "calculator", label: "計算ツール" },
+  { icon: "pen-line", label: "テンプレ生成" },
+  { icon: "file-text", label: "チェックリスト" },
 ];
 
 const howToSteps = [
@@ -81,33 +89,58 @@ export default function HomePage() {
       <section className="relative overflow-hidden bg-gradient-to-b from-brand-800 to-brand-900 text-white">
         <div className="pointer-events-none absolute inset-0 opacity-30 [background:radial-gradient(60%_50%_at_50%_0%,rgba(249,127,18,0.25),transparent_70%)]" />
         <div className="container-content relative py-14 sm:py-20">
-          <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90 ring-1 ring-inset ring-white/15">
-            探せる・使える・ノーコードで作れる、Webツールのカタログ
-          </p>
-          <h1 className="max-w-3xl text-3xl font-black leading-tight sm:text-5xl">
-            {siteConfig.heroTitle}
-          </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/85 sm:text-base">
-            {siteConfig.heroSubtitle}
-          </p>
-          <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/60 sm:text-sm">
-            {siteConfig.heroLead}
-          </p>
+          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <div>
+              <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white/90 ring-1 ring-inset ring-white/15">
+                探せる・使える・ノーコードで作れる、Webツールのカタログ
+              </p>
+              <h1 className="max-w-3xl text-3xl font-black leading-tight sm:text-5xl">
+                {siteConfig.heroTitle}
+              </h1>
+              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-white/85 sm:text-base">
+                {siteConfig.heroSubtitle}
+              </p>
+              <p className="mt-2 max-w-2xl text-xs leading-relaxed text-white/60 sm:text-sm">
+                {siteConfig.heroLead}
+              </p>
 
-          <div className="mt-7 max-w-2xl">
-            <SearchBar />
-          </div>
+              <div className="mt-7 max-w-2xl">
+                <SearchBar />
+              </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <Link href="/services" className="btn-primary">
-              探す
-            </Link>
-            <Link
-              href="/categories"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 px-5 py-3 text-sm font-bold text-white ring-1 ring-inset ring-white/20 transition hover:bg-white/15"
-            >
-              カテゴリから探す
-            </Link>
+              <div className="mt-5 flex flex-wrap items-center gap-3">
+                <Link href="/services" className="btn-primary">
+                  ツールを探す
+                </Link>
+                <Link
+                  href="/categories"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 px-5 py-3 text-sm font-bold text-white ring-1 ring-inset ring-white/20 transition hover:bg-white/15"
+                >
+                  カテゴリから探す
+                </Link>
+              </div>
+            </div>
+
+            {/* 装飾：ノーコードで作れるミニツールの例（lg以上のみ表示） */}
+            <div className="pointer-events-none relative hidden select-none pb-6 lg:block" aria-hidden>
+              <div className="grid w-72 grid-cols-2 gap-3">
+                {heroToolChips.map((c, i) => (
+                  <div
+                    key={c.label}
+                    className={`rounded-2xl bg-white/10 p-4 ring-1 ring-inset ring-white/15 backdrop-blur ${
+                      i % 2 === 1 ? "translate-y-4" : ""
+                    }`}
+                  >
+                    <IconGlyph name={c.icon} size={22} className="text-accent-300" />
+                    <p className="mt-2 text-sm font-bold text-white">{c.label}</p>
+                    <p className="mt-0.5 text-[11px] text-white/60">フォーム入力で作成</p>
+                  </div>
+                ))}
+              </div>
+              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-lg">
+                ノーコードで作成 → そのまま公開
+              </span>
+            </div>
           </div>
         </div>
       </section>

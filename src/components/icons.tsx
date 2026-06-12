@@ -31,6 +31,7 @@ import {
   NotebookPen,
   Scale,
   Sparkles,
+  Lightbulb,
 } from "lucide-react";
 
 /**
@@ -74,7 +75,8 @@ export type IconName =
   | "languages"
   | "notebook-pen"
   | "scale"
-  | "sparkles";
+  | "sparkles"
+  | "lightbulb";
 
 const iconRegistry: Record<IconName, LucideIcon> = {
   bot: Bot,
@@ -107,6 +109,7 @@ const iconRegistry: Record<IconName, LucideIcon> = {
   "notebook-pen": NotebookPen,
   scale: Scale,
   sparkles: Sparkles,
+  lightbulb: Lightbulb,
 };
 
 export type IconTone = "navy" | "orange" | "grey";
